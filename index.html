@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 할 일 관리</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --primary-color: #4f46e5;
+            --danger-color: #ef4444;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        /* 오늘 마감 섹션 */
+        .today-section {
+            background-color: #fef2f2;
+            border: 2px solid #fca5a5;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .today-section h2 {
+            margin-top: 0;
+            color: #dc2626;
+            font-size: 1.1rem;
+        }
+
+        /* 추가 버튼 및 모달 */
+        .add-btn-main {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        /* 할 일 카드 디자인 */
+        .todo-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .todo-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .todo-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .due-date {
+            font-size: 0.8rem;
+            color: #6b7280;
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* 프로그래스 바 (타입 2) */
+        .progress-container {
+            margin-top: 10px;
+        }
+        .progress-bar-bg {
+            background-color: #e5e7eb;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            background-color: var(--primary-color);
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            font-size: 0.85rem;
+            text-align: right;
+            color: #4b5563;
+            margin-top: 4px;
+        }
+
+        /* 서브 태스크 */
+        .subtasks-list {
+            margin-top: 10px;
+            padding-left: 10px;
+        }
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+        .subtask-item.completed span {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+
+        .subtask-input-group {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .subtask-input-group input[type="text"] {
+            flex: 1;
+            padding: 5px;
+        }
+
+        /* 버튼류 */
+        .btn-delete {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* 모달 창 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .modal-btns {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📝 할 일 목록</h1>
+
+    <!-- 오늘 마감인 할 일 섹션 -->
+    <div id="todaySection" class="today-section" style="display: none;">
+        <h2>🚨 오늘 마감인 할 일!</h2>
+        <div id="todayList"></div>
+    </div>
+
+    <button class="add-btn-main" onclick="openModal()">+ 새 할 일 추가하기</button>
+
+    <!-- 전체 할 일 목록 -->
+    <div id="todoList"></div>
+</div>
+
+<!-- 할 일 추가 모달 -->
+<div id="todoModal" class="modal">
+    <div class="modal-content">
+        <h3>새 할 일 추가</h3>
+        <div class="form-group">
+            <label>종류 선택</label>
+            <select id="todoType">
+                <option value="simple">1. 일반 할 일 (체크 시 삭제)</option>
+                <option value="project">2. 세부목록 할 일 (남은 % 표시)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>할 일 제목</label>
+            <input type="text" id="todoTitle" placeholder="할 일을 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>마감기한 (선택)</label>
+            <input type="date" id="todoDueDate">
+        </div>
+        <div class="modal-btns">
+            <button onclick="closeModal()">취소</button>
+            <button onclick="addTodo()" style="background: var(--primary-color); color: white; border:none; padding: 8px 15px; border-radius:4px;">추가</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
+
+    function saveData() {
+        localStorage.setItem('myTodos', JSON.stringify(todos));
+        render();
+    }
+
+    function openModal() {
+        document.getElementById('todoModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('todoModal').style.display = 'none';
+        document.getElementById('todoTitle').value = '';
+        document.getElementById('todoDueDate').value = '';
+    }
+
+    function addTodo() {
+        const type = document.getElementById('todoType').value;
+        const title = document.getElementById('todoTitle').value.trim();
+        const dueDate = document.getElementById('todoDueDate').value;
+
+        if (!title) {
+            alert('제목을 입력해주세요.');
+            return;
+        }
+
+        const newTodo = {
+            id: Date.now(),
+            type: type,
+            title: title,
+            dueDate: dueDate || null,
+            subtasks: [] // 타입 2 전용
+        };
+
+        todos.push(newTodo);
+        saveData();
+        closeModal();
+    }
+
+    function deleteTodo(id) {
+        todos = todos.filter(t => t.id !== id);
+        saveData();
+    }
+
+    // 세부 항목 관련 기능
+    function addSubtask(todoId) {
+        const input = document.getElementById(`subInput-${todoId}`);
+        const dateInput = document.getElementById(`subDate-${todoId}`);
+        const text = input.value.trim();
+        const dueDate = dateInput.value;
+
+        if (!text) return;
+
+        const todo = todos.find(t => t.id === todoId);
+        todo.subtasks.push({
+            id: Date.now(),
+            text: text,
+            completed: false,
+            dueDate: dueDate || null
+        });
+
+        saveData();
+    }
+
+    function toggleSubtask(todoId, subtaskId) {
+        const todo = todos.find(t => t.id === todoId);
+        const subtask = todo.subtasks.find(s => s.id === subtaskId);
+        subtask.completed = !subtask.completed;
+        saveData();
+    }
+
+    function deleteSubtask(todoId, subtaskId) {
+        const todo = todos.find(t => t.id === todoId);
+        todo.subtasks = todo.subtasks.filter(s => s.id !== subtaskId);
+        saveData();
+    }
+
+    function getTodayString() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function render() {
+        const todoList = document.getElementById('todoList');
+        const todayList = document.getElementById('todayList');
+        const todaySection = document.getElementById('todaySection');
+        const todayStr = getTodayString();
+
+        todoList.innerHTML = '';
+        todayList.innerHTML = '';
+        let todayCount = 0;
+
+        todos.forEach(todo => {
+            // 오늘 마감 체크 (메인 할 일 또는 세부 할 일)
+            const isMainToday = todo.dueDate === todayStr;
+            const hasSubToday = todo.type === 'project' && todo.subtasks.some(s => s.dueDate === todayStr && !s.completed);
+
+            if (isMainToday || hasSubToday) {
+                todayCount++;
+                const todayCard = document.createElement('div');
+                todayCard.style.fontSize = '0.9rem';
+                todayCard.style.marginBottom = '5px';
+                todayCard.innerHTML = `📌 <strong>${todo.title}</strong> ${isMainToday ? '(메인 마감)' : '(하위 항목 오늘 마감)'}`;
+                todayList.appendChild(todayCard);
+            }
+
+            // UI 카드 생성
+            const card = document.createElement('div');
+            card.className = 'todo-card';
+
+            if (todo.type === 'simple') {
+                // 타입 1: 일반 할 일
+                card.innerHTML = `
+                    <div class="todo-header">
+                        <div class="todo-title">
+                            <input type="checkbox" onchange="deleteTodo(${todo.id})">
+                            <span>${todo.title}</span>
+                            ${todo.dueDate ? `<span class="due-date">📅 ${todo.dueDate}</span>` : ''}
+                        </div>
+                        <button class="btn-delete" onclick="deleteTodo(${todo.id})">✕</button>
+                    </div>
+                `;
+            } else {
+                // 타입 2: 세부목록 할 일 (남은 퍼센트 계산)
+                const total = todo.subtasks.length;
+                const completedCount = todo.subtasks.filter(s => s.completed).length;
+                // 하위 할 일이 없으면 100%, 있으면 (남은 일수 / 전체) * 100
+                const remainingPercent = total === 0 ? 100 : Math.round(((total - completedCount) / total) * 100);
+
+                let subtaskHTML = todo.subtasks.map(sub => `
+                    <div class="subtask-item ${sub.completed ? 'completed' : ''}">
+                        <div>
+                            <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask(${todo.id}, ${sub.id})">
+                            <span>${sub.text}</span>
+                            ${sub.dueDate ? `<span class="due-date">📅 ${sub.dueDate}</span>` : ''}
+                        </div>
+                        <button class="btn-delete" onclick="deleteSubtask(${todo.id}, ${sub.id})">✕</button>
+                    </div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="todo-header">
+                        <div class="todo-title">
+                            <span>📂 ${todo.title}</span>
+                            ${todo.dueDate ? `<span class="due-date">📅 ${todo.dueDate}</span>` : ''}
+                        </div>
+                        <button class="btn-delete" onclick="deleteTodo(${todo.id})">삭제</button>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${remainingPercent}%;"></div>
+                        </div>
+                        <div class="progress-text">남은 할 일: <strong>${remainingPercent}%</strong></div>
+                    </div>
+
+                    <div class="subtasks-list">
+                        ${subtaskHTML}
+                        <div class="subtask-input-group">
+                            <input type="text" id="subInput-${todo.id}" placeholder="세부 할 일 추가">
+                            <input type="date" id="subDate-${todo.id}" style="width: 110px;">
+                            <button onclick="addSubtask(${todo.id})">추가</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            todoList.appendChild(card);
+        });
+
+        // 오늘 마감 영역 노출 여부
+        todaySection.style.display = todayCount > 0 ? 'block' : 'none';
+    }
+
+    // 초기 실행
+    render();
+</script>
+</body>
+</html>
