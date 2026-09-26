@@ -61,7 +61,7 @@
         }
         .memo-textarea {
             width: 100%;
-            height: 70px;
+            min-height: 60px;
             border: 1px solid #e0f2fe;
             background-color: #f8fafc;
             border-radius: 12px;
@@ -71,7 +71,9 @@
             font-size: 0.92rem;
             color: var(--text-color);
             outline: none;
-            resize: vertical;
+            resize: none; /* 드래그 조절 비활성화 (자동 높이조절 적용) */
+            overflow: hidden; /* 스크롤바 숨김 */
+            line-height: 1.5;
             transition: border-color 0.2s, background-color 0.2s;
         }
         .memo-textarea:focus {
@@ -119,7 +121,7 @@
             box-shadow: 0 6px 18px rgba(59, 130, 246, 0.4);
         }
 
-        /* 할 일 카드 컨테이너 (스와이프 가능) */
+        /* 할 일 카드 컨테이너 */
         .todo-card-wrapper {
             position: relative;
             margin-bottom: 16px;
@@ -375,7 +377,7 @@
     <!-- 빠른 메모 칸 -->
     <div class="memo-section">
         <h2>✏️ 빠른 메모장</h2>
-        <textarea id="quickMemo" class="memo-textarea" placeholder="자유롭게 자유로운 메모를 남겨보세요... (자동 저장됨)"></textarea>
+        <textarea id="quickMemo" class="memo-textarea" placeholder="자유롭게 메모를 남겨보세요... (자동 저장)"></textarea>
     </div>
 
     <!-- 오늘 마감 섹션 -->
@@ -433,11 +435,22 @@
     let deleteTarget = null;
     let editingTodoId = null;
 
-    // 메모 자동 저장 설정
+    // 메모장 높이 자동조절 함수
+    function autoResizeMemo(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
+
+    // 메모 저장 & 자동 높이조절 설정
     const memoTextarea = document.getElementById('quickMemo');
     memoTextarea.value = localStorage.getItem('myQuickMemo') || '';
+    
+    // 초기 불러올 때 높이 조절
+    autoResizeMemo(memoTextarea);
+
     memoTextarea.addEventListener('input', () => {
         localStorage.setItem('myQuickMemo', memoTextarea.value);
+        autoResizeMemo(memoTextarea);
     });
 
     function saveData() {
@@ -573,7 +586,7 @@
         return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     }
 
-    /* 스와이프 이벤트를 연결하는 함수 */
+    /* 스와이프 이벤트 함수 */
     function initSwipe(cardEl, id) {
         let startX = 0;
         let currentX = 0;
@@ -632,7 +645,6 @@
         let todayCount = 0;
 
         todos.forEach(todo => {
-            // 오늘 마감 항목 수집
             if (todo.dueDate === todayStr) {
                 todayCount++;
                 const item = document.createElement('div');
@@ -657,11 +669,9 @@
                 });
             }
 
-            // 카드 생성
             const wrapper = document.createElement('div');
 
             if (todo.type === 'simple') {
-                // 1. 일반 할 일
                 wrapper.className = 'todo-card-wrapper';
                 wrapper.innerHTML = `
                     <div class="swipe-hint">✓ 완료됨!</div>
@@ -687,7 +697,6 @@
                 }, 0);
 
             } else {
-                // 2. 세부목록 할 일
                 wrapper.className = 'todo-card';
                 const total = todo.subtasks.length;
                 const completedCount = todo.subtasks.filter(s => s.completed).length;
