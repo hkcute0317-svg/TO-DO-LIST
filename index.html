@@ -8,11 +8,12 @@
         :root {
             --bg-color: #f0f7ff;
             --card-bg: #ffffff;
-            --primary-color: #60a5fa;      /* 파스텔 블루 */
-            --primary-hover: #3b82f6;      /* 조금 더 진한 블루 */
-            --primary-light: #e0f2fe;      /* 연한 하늘색 배경 */
-            --danger-color: #f87171;       /* 은은한 빨간색 */
+            --primary-color: #60a5fa;
+            --primary-hover: #3b82f6;
+            --primary-light: #e0f2fe;
+            --danger-color: #f87171;
             --danger-hover: #ef4444;
+            --success-color: #4ade80;
             --text-color: #334155;
             --text-sub: #64748b;
             --border-radius: 16px;
@@ -26,6 +27,7 @@
             padding: 24px 16px;
             display: flex;
             justify-content: center;
+            user-select: none;
         }
 
         .container {
@@ -51,7 +53,7 @@
             animation: fadeIn 0.3s ease-in-out;
         }
         .today-section h2 {
-            margin: 0 0 8px 0;
+            margin: 0 0 10px 0;
             color: #e11d48;
             font-size: 1.05rem;
             display: flex;
@@ -59,7 +61,7 @@
             gap: 6px;
         }
 
-        /* 추가 버튼 */
+        /* 메인 추가 버튼 */
         .add-btn-main {
             width: 100%;
             padding: 14px;
@@ -80,18 +82,38 @@
             box-shadow: 0 6px 18px rgba(59, 130, 246, 0.4);
         }
 
-        /* 할 일 카드 디자인 */
+        /* 할 일 카드 컨테이너 (스와이프 가능) */
+        .todo-card-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background-color: var(--success-color); /* 밀었을 때 뒤에 나오는 완료 배경 */
+        }
+
+        .swipe-hint {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-weight: bold;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 1;
+        }
+
         .todo-card {
+            position: relative;
+            z-index: 2;
             background: var(--card-bg);
             border-radius: var(--border-radius);
             padding: 18px 20px;
-            margin-bottom: 16px;
             box-shadow: 0 4px 16px rgba(186, 230, 253, 0.25);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            animation: slideDown 0.25s ease-out;
-        }
-        .todo-card:hover {
-            box-shadow: 0 6px 20px rgba(147, 197, 253, 0.35);
+            transition: transform 0.1s ease-out, box-shadow 0.2s ease;
+            touch-action: pan-y;
         }
 
         .todo-header {
@@ -105,7 +127,7 @@
             font-size: 1.1rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             word-break: break-all;
         }
 
@@ -119,16 +141,7 @@
             white-space: nowrap;
         }
 
-        /* 커스텀 체크박스 */
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--primary-color);
-            cursor: pointer;
-            border-radius: 6px;
-        }
-
-        /* 프로그래스 바 (타입 2) */
+        /* 프로그래스 바 */
         .progress-container {
             margin-top: 14px;
         }
@@ -143,7 +156,6 @@
             height: 100%;
             width: 100%;
             border-radius: 10px;
-            /* 부드러운 길이 변화 애니메이션 */
             transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .progress-text {
@@ -157,7 +169,7 @@
         /* 서브 태스크 */
         .subtasks-list {
             margin-top: 14px;
-            border-top: 1px linear-gradient(to right, #f1f5f9, #e2e8f0);
+            border-top: 1px solid #f1f5f9;
             padding-top: 10px;
         }
         .subtask-item {
@@ -166,12 +178,8 @@
             justify-content: space-between;
             font-size: 0.95rem;
             margin-top: 8px;
-            padding: 4px 6px;
+            padding: 6px 8px;
             border-radius: 8px;
-            transition: background-color 0.15s ease;
-        }
-        .subtask-item:hover {
-            background-color: #f8fafc;
         }
         .subtask-item.completed span {
             text-decoration: line-through;
@@ -190,10 +198,6 @@
             border-radius: 12px;
             outline: none;
             font-size: 0.9rem;
-            transition: border-color 0.2s;
-        }
-        .subtask-input-group input[type="text"]:focus {
-            border-color: var(--primary-color);
         }
         .subtask-input-group input[type="date"] {
             border: 1.5px solid #bae6fd;
@@ -201,7 +205,6 @@
             padding: 6px 8px;
             outline: none;
             font-size: 0.85rem;
-            color: var(--text-color);
         }
         .subtask-input-group button {
             background: var(--primary-color);
@@ -211,30 +214,39 @@
             padding: 8px 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
-        }
-        .subtask-input-group button:hover {
-            background: var(--primary-hover);
         }
 
         /* 버튼류 */
+        .btn-action {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .btn-action:hover {
+            background-color: #f1f5f9;
+            color: var(--text-color);
+        }
         .btn-delete {
             background: none;
             border: none;
             color: #cbd5e1;
             cursor: pointer;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.9rem;
             padding: 4px 8px;
             border-radius: 8px;
-            transition: all 0.2s ease;
         }
         .btn-delete:hover {
             color: var(--danger-color);
             background-color: #fef2f2;
         }
 
-        /* 모달 스타일 (추가 / 삭제 공통) */
+        /* 모달 스타일 */
         .modal {
             display: none;
             position: fixed;
@@ -258,7 +270,6 @@
         .modal-content h3 {
             margin-top: 0;
             margin-bottom: 16px;
-            color: #1e293b;
         }
         .form-group {
             margin-bottom: 16px;
@@ -278,12 +289,7 @@
             border-radius: 12px;
             outline: none;
             font-size: 0.95rem;
-            color: var(--text-color);
             background-color: #f8fafc;
-        }
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--primary-color);
-            background-color: #ffffff;
         }
 
         .modal-btns {
@@ -300,10 +306,6 @@
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-secondary:hover {
-            background: #e2e8f0;
         }
         .btn-primary {
             background: var(--primary-color);
@@ -313,10 +315,6 @@
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-primary:hover {
-            background: var(--primary-hover);
         }
         .btn-danger {
             background: var(--danger-color);
@@ -326,25 +324,10 @@
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-danger:hover {
-            background: var(--danger-hover);
         }
 
-        /* 키프레임 애니메이션 */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes popUp {
-            from { opacity: 0; transform: scale(0.92); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popUp { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -352,7 +335,7 @@
 <div class="container">
     <h1>🩵 오늘의 할 일</h1>
 
-    <!-- 오늘 마감인 할 일 섹션 -->
+    <!-- 오늘 마감 섹션 -->
     <div id="todaySection" class="today-section" style="display: none;">
         <h2>🚨 오늘 마감인 할 일!</h2>
         <div id="todayList"></div>
@@ -364,14 +347,14 @@
     <div id="todoList"></div>
 </div>
 
-<!-- 할 일 추가 모달 -->
+<!-- 추가/수정 모달 -->
 <div id="todoModal" class="modal">
     <div class="modal-content">
-        <h3>✨ 새 할 일 추가</h3>
+        <h3 id="modalTitle">✨ 새 할 일 추가</h3>
         <div class="form-group">
             <label>종류 선택</label>
             <select id="todoType">
-                <option value="simple">1. 일반 할 일 (체크 시 자동삭제)</option>
+                <option value="simple">1. 일반 할 일 (오른쪽으로 밀어서 완료)</option>
                 <option value="project">2. 세부목록 할 일 (남은 % 표시)</option>
             </select>
         </div>
@@ -385,16 +368,16 @@
         </div>
         <div class="modal-btns">
             <button class="btn-secondary" onclick="closeModal()">취소</button>
-            <button class="btn-primary" onclick="addTodo()">추가하기</button>
+            <button class="btn-primary" id="saveTodoBtn" onclick="addTodo()">추가하기</button>
         </div>
     </div>
 </div>
 
-<!-- 삭제 확인 경고 모달 -->
+<!-- 삭제 확인 모달 -->
 <div id="deleteModal" class="modal">
     <div class="modal-content">
         <h3>🗑️ 진짜 삭제하시겠습니까?</h3>
-        <p style="color: var(--text-sub); font-size: 0.95rem; margin-bottom: 20px;" id="deleteConfirmText">삭제된 항목은 복구할 수 없습니다.</p>
+        <p style="color: var(--text-sub); font-size: 0.95rem; margin-bottom: 20px;">삭제된 항목은 복구할 수 없습니다.</p>
         <div class="modal-btns">
             <button class="btn-secondary" onclick="closeDeleteModal()">취소</button>
             <button class="btn-danger" id="confirmDeleteBtn">삭제하기</button>
@@ -404,31 +387,88 @@
 
 <script>
     let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
-    let deleteTarget = null; // 삭제 대상을 저장할 변수
+    let deleteTarget = null;
+    let editingTodoId = null;
 
     function saveData() {
         localStorage.setItem('myTodos', JSON.stringify(todos));
         render();
     }
 
-    /* 새 할 일 추가 모달 */
-    function openModal() {
+    function openModal(editId = null) {
+        editingTodoId = editId;
+        const modalTitle = document.getElementById('modalTitle');
+        const saveBtn = document.getElementById('saveTodoBtn');
+
+        if (editId) {
+            const todo = todos.find(t => t.id === editId);
+            modalTitle.innerText = '✏️ 할 일 수정 및 형식 변경';
+            document.getElementById('todoType').value = todo.type;
+            document.getElementById('todoTitle').value = todo.title;
+            document.getElementById('todoDueDate').value = todo.dueDate || '';
+            saveBtn.innerText = '수정 완료';
+            saveBtn.onclick = updateTodo;
+        } else {
+            modalTitle.innerText = '✨ 새 할 일 추가';
+            document.getElementById('todoType').value = 'simple';
+            document.getElementById('todoTitle').value = '';
+            document.getElementById('todoDueDate').value = '';
+            saveBtn.innerText = '추가하기';
+            saveBtn.onclick = addTodo;
+        }
+
         document.getElementById('todoModal').style.display = 'flex';
     }
 
     function closeModal() {
         document.getElementById('todoModal').style.display = 'none';
-        document.getElementById('todoTitle').value = '';
-        document.getElementById('todoDueDate').value = '';
+        editingTodoId = null;
     }
 
-    /* 삭제 확인 모달 */
+    function addTodo() {
+        const type = document.getElementById('todoType').value;
+        const title = document.getElementById('todoTitle').value.trim();
+        const dueDate = document.getElementById('todoDueDate').value;
+
+        if (!title) {
+            alert('제목을 입력해주세요.');
+            return;
+        }
+
+        todos.push({
+            id: Date.now(),
+            type, title,
+            dueDate: dueDate || null,
+            subtasks: []
+        });
+
+        saveData();
+        closeModal();
+    }
+
+    function updateTodo() {
+        const todo = todos.find(t => t.id === editingTodoId);
+        if (!todo) return;
+
+        const title = document.getElementById('todoTitle').value.trim();
+        if (!title) {
+            alert('제목을 입력해주세요.');
+            return;
+        }
+
+        todo.type = document.getElementById('todoType').value;
+        todo.title = title;
+        todo.dueDate = document.getElementById('todoDueDate').value || null;
+
+        saveData();
+        closeModal();
+    }
+
+    /* 삭제 모달 */
     function openDeleteModal(type, todoId, subtaskId = null) {
         deleteTarget = { type, todoId, subtaskId };
         document.getElementById('deleteModal').style.display = 'flex';
-        
-        const confirmBtn = document.getElementById('confirmDeleteBtn');
-        confirmBtn.onclick = function() {
+        document.getElementById('confirmDeleteBtn').onclick = () => {
             executeDelete();
             closeDeleteModal();
         };
@@ -447,51 +487,25 @@
             todos = todos.filter(t => t.id !== todoId);
         } else if (type === 'subtask') {
             const todo = todos.find(t => t.id === todoId);
-            if (todo) {
-                todo.subtasks = todo.subtasks.filter(s => s.id !== subtaskId);
-            }
+            if (todo) todo.subtasks = todo.subtasks.filter(s => s.id !== subtaskId);
         }
         saveData();
     }
 
-    function addTodo() {
-        const type = document.getElementById('todoType').value;
-        const title = document.getElementById('todoTitle').value.trim();
-        const dueDate = document.getElementById('todoDueDate').value;
-
-        if (!title) {
-            alert('제목을 입력해주세요.');
-            return;
-        }
-
-        const newTodo = {
-            id: Date.now(),
-            type: type,
-            title: title,
-            dueDate: dueDate || null,
-            subtasks: []
-        };
-
-        todos.push(newTodo);
-        saveData();
-        closeModal();
-    }
-
-    /* 세부 항목 관련 기능 */
+    /* 서브태스크 관리 */
     function addSubtask(todoId) {
         const input = document.getElementById(`subInput-${todoId}`);
         const dateInput = document.getElementById(`subDate-${todoId}`);
         const text = input.value.trim();
-        const dueDate = dateInput.value;
 
         if (!text) return;
 
         const todo = todos.find(t => t.id === todoId);
         todo.subtasks.push({
             id: Date.now(),
-            text: text,
+            text,
             completed: false,
-            dueDate: dueDate || null
+            dueDate: dateInput.value || null
         });
 
         saveData();
@@ -506,10 +520,58 @@
 
     function getTodayString() {
         const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    }
+
+    /* 스와이프 이벤트를 연결하는 함수 */
+    function initSwipe(cardEl, id) {
+        let startX = 0;
+        let currentX = 0;
+        let isSwiping = false;
+
+        const onStart = (e) => {
+            startX = e.touches ? e.touches[0].clientX : e.clientX;
+            isSwiping = true;
+            cardEl.style.transition = 'none';
+        };
+
+        const onMove = (e) => {
+            if (!isSwiping) return;
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            currentX = x - startX;
+
+            // 오른쪽으로만 밀리도록 설정 (음수는 방지)
+            if (currentX > 0) {
+                cardEl.style.transform = `translateX(${currentX}px)`;
+            }
+        };
+
+        const onEnd = () => {
+            if (!isSwiping) return;
+            isSwiping = false;
+            cardEl.style.transition = 'transform 0.25s ease';
+
+            // 카드 폭의 약 40% 이상 오른쪽으로 밀었을 때 완료 처리
+            if (currentX > cardEl.offsetWidth * 0.4) {
+                cardEl.style.transform = `translateX(${cardEl.offsetWidth + 50}px)`;
+                setTimeout(() => {
+                    todos = todos.filter(t => t.id !== id);
+                    saveData();
+                }, 200);
+            } else {
+                // 원위치
+                cardEl.style.transform = `translateX(0px)`;
+            }
+            currentX = 0;
+        };
+
+        cardEl.addEventListener('touchstart', onStart);
+        cardEl.addEventListener('touchmove', onMove);
+        cardEl.addEventListener('touchend', onEnd);
+
+        cardEl.addEventListener('mousedown', onStart);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onEnd);
     }
 
     function render() {
@@ -523,38 +585,65 @@
         let todayCount = 0;
 
         todos.forEach(todo => {
-            // 오늘 마감 체크
-            const isMainToday = todo.dueDate === todayStr;
-            const hasSubToday = todo.type === 'project' && todo.subtasks.some(s => s.dueDate === todayStr && !s.completed);
-
-            if (isMainToday || hasSubToday) {
+            // 오늘 마감 항목 수집
+            if (todo.dueDate === todayStr) {
                 todayCount++;
-                const todayCard = document.createElement('div');
-                todayCard.style.fontSize = '0.9rem';
-                todayCard.style.marginBottom = '6px';
-                todayCard.style.color = '#9f1239';
-                todayCard.innerHTML = `📌 <strong>${todo.title}</strong> ${isMainToday ? '(메인 마감)' : '(하위 항목 마감)'}`;
-                todayList.appendChild(todayCard);
+                const item = document.createElement('div');
+                item.style.fontSize = '0.9rem';
+                item.style.marginBottom = '6px';
+                item.style.color = '#9f1239';
+                item.innerHTML = `📌 <strong>${todo.title}</strong> (메인 목록)`;
+                todayList.appendChild(item);
             }
 
-            // 카드 UI 생성
-            const card = document.createElement('div');
-            card.className = 'todo-card';
+            if (todo.type === 'project') {
+                todo.subtasks.forEach(sub => {
+                    if (sub.dueDate === todayStr && !sub.completed) {
+                        todayCount++;
+                        const item = document.createElement('div');
+                        item.style.fontSize = '0.9rem';
+                        item.style.marginBottom = '6px';
+                        item.style.color = '#9f1239';
+                        // 요청대로: 하위목록이름 (큰목록이름) 형식으로 출력!
+                        item.innerHTML = `📌 <strong>${sub.text}</strong> (${todo.title})`;
+                        todayList.appendChild(item);
+                    }
+                });
+            }
+
+            // 카드 생성
+            const wrapper = document.createElement('div');
 
             if (todo.type === 'simple') {
-                // 타입 1: 일반 할 일 (체크 시 삭제)
-                card.innerHTML = `
-                    <div class="todo-header">
-                        <div class="todo-title">
-                            <input type="checkbox" onchange="executeDirectDelete(${todo.id})">
-                            <span>${todo.title}</span>
-                            ${todo.dueDate ? `<span class="due-date">📅 ${todo.dueDate}</span>` : ''}
+                // 1. 일반 할 일 (밀어서 삭제 스와이프 기능 포함)
+                wrapper.className = 'todo-card-wrapper';
+                wrapper.innerHTML = `
+                    <div class="swipe-hint">✓ 완료됨!</div>
+                    <div class="todo-card" id="card-${todo.id}">
+                        <div class="todo-header">
+                            <div class="todo-title">
+                                <span>👉 ${todo.title}</span>
+                                ${todo.dueDate ? `<span class="due-date">📅 ${todo.dueDate}</span>` : ''}
+                            </div>
+                            <div>
+                                <button class="btn-action" onclick="openModal(${todo.id})">수정</button>
+                                <button class="btn-delete" onclick="openDeleteModal('todo', ${todo.id})">삭제</button>
+                            </div>
                         </div>
-                        <button class="btn-delete" onclick="openDeleteModal('todo', ${todo.id})">✕</button>
+                        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 6px;">💡 오른쪽으로 밀어서 바로 완료</div>
                     </div>
                 `;
+                todoList.appendChild(wrapper);
+
+                // render 완료 후 스와이프 event 붙이기
+                setTimeout(() => {
+                    const cardEl = document.getElementById(`card-${todo.id}`);
+                    if (cardEl) initSwipe(cardEl, todo.id);
+                }, 0);
+
             } else {
-                // 타입 2: 세부목록 할 일 (% 애니메이션)
+                // 2. 세부목록 할 일
+                wrapper.className = 'todo-card';
                 const total = todo.subtasks.length;
                 const completedCount = todo.subtasks.filter(s => s.completed).length;
                 const remainingPercent = total === 0 ? 100 : Math.round(((total - completedCount) / total) * 100);
@@ -570,13 +659,16 @@
                     </div>
                 `).join('');
 
-                card.innerHTML = `
+                wrapper.innerHTML = `
                     <div class="todo-header">
                         <div class="todo-title">
                             <span>📂 ${todo.title}</span>
                             ${todo.dueDate ? `<span class="due-date">📅 ${todo.dueDate}</span>` : ''}
                         </div>
-                        <button class="btn-delete" onclick="openDeleteModal('todo', ${todo.id})">삭제</button>
+                        <div>
+                            <button class="btn-action" onclick="openModal(${todo.id})">수정</button>
+                            <button class="btn-delete" onclick="openDeleteModal('todo', ${todo.id})">삭제</button>
+                        </div>
                     </div>
                     
                     <div class="progress-container">
@@ -595,21 +687,13 @@
                         </div>
                     </div>
                 `;
+                todoList.appendChild(wrapper);
             }
-
-            todoList.appendChild(card);
         });
 
         todaySection.style.display = todayCount > 0 ? 'block' : 'none';
     }
 
-    // 일반 할 일 체크박스 선택 시 바로 삭제하는 함수
-    function executeDirectDelete(id) {
-        todos = todos.filter(t => t.id !== id);
-        saveData();
-    }
-
-    // 초기 실행
     render();
 </script>
 </body>
