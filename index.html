@@ -42,6 +42,15 @@
             margin-bottom: 20px;
         }
 
+        /* 섹션 공통 스타일 */
+        .section-title {
+            margin: 24px 0 12px 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         /* 빠른 메모 섹션 */
         .memo-section {
             background: var(--card-bg);
@@ -71,8 +80,8 @@
             font-size: 0.92rem;
             color: var(--text-color);
             outline: none;
-            resize: none; /* 드래그 조절 비활성화 (자동 높이조절 적용) */
-            overflow: hidden; /* 스크롤바 숨김 */
+            resize: none;
+            overflow: hidden;
             line-height: 1.5;
             transition: border-color 0.2s, background-color 0.2s;
         }
@@ -98,6 +107,18 @@
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+
+        /* 특수 분류 전용 영역 */
+        .category-group {
+            margin-bottom: 20px;
+        }
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #bae6fd;
         }
 
         /* 메인 추가 버튼 */
@@ -153,6 +174,7 @@
             box-shadow: 0 4px 16px rgba(186, 230, 253, 0.25);
             transition: transform 0.1s ease-out, box-shadow 0.2s ease;
             touch-action: pan-y;
+            margin-bottom: 16px;
         }
 
         .todo-header {
@@ -169,6 +191,15 @@
             gap: 8px;
             word-break: break-all;
         }
+
+        .tag-badge {
+            font-size: 0.72rem;
+            padding: 2px 7px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .tag-commission { background: #fef3c7; color: #d97706; }
+        .tag-homework { background: #f3e8ff; color: #7e22ce; }
 
         .due-date {
             font-size: 0.78rem;
@@ -388,8 +419,22 @@
 
     <button class="add-btn-main" onclick="openModal()">+ 새 할 일 추가하기</button>
 
-    <!-- 전체 할 일 목록 -->
-    <div id="todoList"></div>
+    <!-- 특수 커스텀 태그 목록 섹션들 (동적 표시) -->
+    <div id="commissionSection" class="category-group" style="display: none;">
+        <div class="category-title" style="color: #d97706;">🎨 커미션 목록</div>
+        <div id="commissionList"></div>
+    </div>
+
+    <div id="homeworkSection" class="category-group" style="display: none;">
+        <div class="category-title" style="color: #7e22ce;">📚 숙제 목록</div>
+        <div id="homeworkList"></div>
+    </div>
+
+    <!-- 일반 전체 할 일 목록 -->
+    <div id="mainSection" class="category-group">
+        <div class="category-title" id="mainSectionTitle" style="color: #0284c7; display: none;">📋 기타 및 일반 할 일</div>
+        <div id="todoList"></div>
+    </div>
 </div>
 
 <!-- 추가/수정 모달 -->
@@ -397,10 +442,18 @@
     <div class="modal-content">
         <h3 id="modalTitle">✨ 새 할 일 추가</h3>
         <div class="form-group">
-            <label>종류 선택</label>
+            <label>특성 분류</label>
+            <select id="todoCategory">
+                <option value="none">일반 할 일</option>
+                <option value="commission">🎨 커미션</option>
+                <option value="homework">📚 숙제</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>표시 방식 선택</label>
             <select id="todoType">
-                <option value="simple">1. 일반 할 일 (오른쪽으로 밀어서 완료)</option>
-                <option value="project">2. 세부목록 할 일 (남은 % 표시)</option>
+                <option value="simple">1. 일반 방식 (밀어서 완료)</option>
+                <option value="project">2. 세부목록 방식 (남은 % 표시)</option>
             </select>
         </div>
         <div class="form-group">
@@ -441,11 +494,8 @@
         el.style.height = el.scrollHeight + 'px';
     }
 
-    // 메모 저장 & 자동 높이조절 설정
     const memoTextarea = document.getElementById('quickMemo');
     memoTextarea.value = localStorage.getItem('myQuickMemo') || '';
-    
-    // 초기 불러올 때 높이 조절
     autoResizeMemo(memoTextarea);
 
     memoTextarea.addEventListener('input', () => {
@@ -465,7 +515,8 @@
 
         if (editId) {
             const todo = todos.find(t => t.id === editId);
-            modalTitle.innerText = '✏️ 할 일 수정 및 형식 변경';
+            modalTitle.innerText = '✏️ 할 일 수정';
+            document.getElementById('todoCategory').value = todo.category || 'none';
             document.getElementById('todoType').value = todo.type;
             document.getElementById('todoTitle').value = todo.title;
             document.getElementById('todoDueDate').value = todo.dueDate || '';
@@ -473,6 +524,7 @@
             saveBtn.onclick = updateTodo;
         } else {
             modalTitle.innerText = '✨ 새 할 일 추가';
+            document.getElementById('todoCategory').value = 'none';
             document.getElementById('todoType').value = 'simple';
             document.getElementById('todoTitle').value = '';
             document.getElementById('todoDueDate').value = '';
@@ -489,6 +541,7 @@
     }
 
     function addTodo() {
+        const category = document.getElementById('todoCategory').value;
         const type = document.getElementById('todoType').value;
         const title = document.getElementById('todoTitle').value.trim();
         const dueDate = document.getElementById('todoDueDate').value;
@@ -500,6 +553,7 @@
 
         todos.push({
             id: Date.now(),
+            category,
             type, title,
             dueDate: dueDate || null,
             subtasks: []
@@ -519,6 +573,7 @@
             return;
         }
 
+        todo.category = document.getElementById('todoCategory').value;
         todo.type = document.getElementById('todoType').value;
         todo.title = title;
         todo.dueDate = document.getElementById('todoDueDate').value || null;
@@ -527,7 +582,6 @@
         closeModal();
     }
 
-    /* 삭제 모달 */
     function openDeleteModal(type, todoId, subtaskId = null) {
         deleteTarget = { type, todoId, subtaskId };
         document.getElementById('deleteModal').style.display = 'flex';
@@ -555,7 +609,6 @@
         saveData();
     }
 
-    /* 서브태스크 관리 */
     function addSubtask(todoId) {
         const input = document.getElementById(`subInput-${todoId}`);
         const dateInput = document.getElementById(`subDate-${todoId}`);
@@ -586,7 +639,6 @@
         return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     }
 
-    /* 스와이프 이벤트 함수 */
     function initSwipe(cardEl, id) {
         let startX = 0;
         let currentX = 0;
@@ -634,24 +686,114 @@
         window.addEventListener('mouseup', onEnd);
     }
 
+    function createCardElement(todo) {
+        const wrapper = document.createElement('div');
+
+        if (todo.type === 'simple') {
+            wrapper.className = 'todo-card-wrapper';
+            wrapper.innerHTML = `
+                <div class="swipe-hint">✓ 완료됨!</div>
+                <div class="todo-card" id="card-${todo.id}">
+                    <div class="todo-header">
+                        <div class="todo-title">
+                            <span>👉 ${todo.title}</span>
+                            ${todo.dueDate ? `<span class="due-date">📅 ${todo.dueDate}</span>` : ''}
+                        </div>
+                        <div>
+                            <button class="btn-action" onclick="openModal(${todo.id})">수정</button>
+                            <button class="btn-delete" onclick="openDeleteModal('todo', ${todo.id})">삭제</button>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 6px;">💡 오른쪽으로 밀어서 바로 완료</div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                const cardEl = document.getElementById(`card-${todo.id}`);
+                if (cardEl) initSwipe(cardEl, todo.id);
+            }, 0);
+
+        } else {
+            wrapper.className = 'todo-card';
+            const total = todo.subtasks.length;
+            const completedCount = todo.subtasks.filter(s => s.completed).length;
+            const remainingPercent = total === 0 ? 100 : Math.round(((total - completedCount) / total) * 100);
+
+            let subtaskHTML = todo.subtasks.map(sub => `
+                <div class="subtask-item ${sub.completed ? 'completed' : ''}">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask(${todo.id}, ${sub.id})">
+                        <span>${sub.text}</span>
+                        ${sub.dueDate ? `<span class="due-date">📅 ${sub.dueDate}</span>` : ''}
+                    </div>
+                    <button class="btn-delete" onclick="openDeleteModal('subtask', ${todo.id}, ${sub.id})">✕</button>
+                </div>
+            `).join('');
+
+            wrapper.innerHTML = `
+                <div class="todo-header">
+                    <div class="todo-title">
+                        <span>📂 ${todo.title}</span>
+                        ${todo.dueDate ? `<span class="due-date">📅 ${todo.dueDate}</span>` : ''}
+                    </div>
+                    <div>
+                        <button class="btn-action" onclick="openModal(${todo.id})">수정</button>
+                        <button class="btn-delete" onclick="openDeleteModal('todo', ${todo.id})">삭제</button>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: ${remainingPercent}%;"></div>
+                    </div>
+                    <div class="progress-text">남은 할 일: <strong>${remainingPercent}%</strong></div>
+                </div>
+
+                <div class="subtasks-list">
+                    ${subtaskHTML}
+                    <div class="subtask-input-group">
+                        <input type="text" id="subInput-${todo.id}" placeholder="세부 할 일 입력...">
+                        <input type="date" id="subDate-${todo.id}">
+                        <button onclick="addSubtask(${todo.id})">추가</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        return wrapper;
+    }
+
     function render() {
         const todoList = document.getElementById('todoList');
+        const commissionList = document.getElementById('commissionList');
+        const homeworkList = document.getElementById('homeworkList');
         const todayList = document.getElementById('todayList');
+
         const todaySection = document.getElementById('todaySection');
+        const commissionSection = document.getElementById('commissionSection');
+        const homeworkSection = document.getElementById('homeworkSection');
+        const mainSectionTitle = document.getElementById('mainSectionTitle');
+
         const todayStr = getTodayString();
 
         todoList.innerHTML = '';
+        commissionList.innerHTML = '';
+        homeworkList.innerHTML = '';
         todayList.innerHTML = '';
+
         let todayCount = 0;
+        let commissionCount = 0;
+        let homeworkCount = 0;
 
         todos.forEach(todo => {
+            // 1. 오늘 마감 체크
             if (todo.dueDate === todayStr) {
                 todayCount++;
                 const item = document.createElement('div');
                 item.style.fontSize = '0.9rem';
                 item.style.marginBottom = '6px';
                 item.style.color = '#9f1239';
-                item.innerHTML = `📌 <strong>${todo.title}</strong> (메인 목록)`;
+                item.innerHTML = `📌 <strong>${todo.title}</strong>`;
                 todayList.appendChild(item);
             }
 
@@ -669,83 +811,31 @@
                 });
             }
 
-            const wrapper = document.createElement('div');
+            // 2. 카테고리별 분리 배치
+            const cardElement = createCardElement(todo);
 
-            if (todo.type === 'simple') {
-                wrapper.className = 'todo-card-wrapper';
-                wrapper.innerHTML = `
-                    <div class="swipe-hint">✓ 완료됨!</div>
-                    <div class="todo-card" id="card-${todo.id}">
-                        <div class="todo-header">
-                            <div class="todo-title">
-                                <span>👉 ${todo.title}</span>
-                                ${todo.dueDate ? `<span class="due-date">📅 ${todo.dueDate}</span>` : ''}
-                            </div>
-                            <div>
-                                <button class="btn-action" onclick="openModal(${todo.id})">수정</button>
-                                <button class="btn-delete" onclick="openDeleteModal('todo', ${todo.id})">삭제</button>
-                            </div>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 6px;">💡 오른쪽으로 밀어서 바로 완료</div>
-                    </div>
-                `;
-                todoList.appendChild(wrapper);
-
-                setTimeout(() => {
-                    const cardEl = document.getElementById(`card-${todo.id}`);
-                    if (cardEl) initSwipe(cardEl, todo.id);
-                }, 0);
-
+            if (todo.category === 'commission') {
+                commissionList.appendChild(cardElement);
+                commissionCount++;
+            } else if (todo.category === 'homework') {
+                homeworkList.appendChild(cardElement);
+                homeworkCount++;
             } else {
-                wrapper.className = 'todo-card';
-                const total = todo.subtasks.length;
-                const completedCount = todo.subtasks.filter(s => s.completed).length;
-                const remainingPercent = total === 0 ? 100 : Math.round(((total - completedCount) / total) * 100);
-
-                let subtaskHTML = todo.subtasks.map(sub => `
-                    <div class="subtask-item ${sub.completed ? 'completed' : ''}">
-                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask(${todo.id}, ${sub.id})">
-                            <span>${sub.text}</span>
-                            ${sub.dueDate ? `<span class="due-date">📅 ${sub.dueDate}</span>` : ''}
-                        </div>
-                        <button class="btn-delete" onclick="openDeleteModal('subtask', ${todo.id}, ${sub.id})">✕</button>
-                    </div>
-                `).join('');
-
-                wrapper.innerHTML = `
-                    <div class="todo-header">
-                        <div class="todo-title">
-                            <span>📂 ${todo.title}</span>
-                            ${todo.dueDate ? `<span class="due-date">📅 ${todo.dueDate}</span>` : ''}
-                        </div>
-                        <div>
-                            <button class="btn-action" onclick="openModal(${todo.id})">수정</button>
-                            <button class="btn-delete" onclick="openDeleteModal('todo', ${todo.id})">삭제</button>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-container">
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" style="width: ${remainingPercent}%;"></div>
-                        </div>
-                        <div class="progress-text">남은 할 일: <strong>${remainingPercent}%</strong></div>
-                    </div>
-
-                    <div class="subtasks-list">
-                        ${subtaskHTML}
-                        <div class="subtask-input-group">
-                            <input type="text" id="subInput-${todo.id}" placeholder="세부 할 일 입력...">
-                            <input type="date" id="subDate-${todo.id}">
-                            <button onclick="addSubtask(${todo.id})">추가</button>
-                        </div>
-                    </div>
-                `;
-                todoList.appendChild(wrapper);
+                todoList.appendChild(cardElement);
             }
         });
 
+        // 섹션 보이기/숨기기 처리
         todaySection.style.display = todayCount > 0 ? 'block' : 'none';
+        commissionSection.style.display = commissionCount > 0 ? 'block' : 'none';
+        homeworkSection.style.display = homeworkCount > 0 ? 'block' : 'none';
+
+        // 특수 태그 섹션이 있을 때는 메인 목록 구분을 위한 소제목 표시
+        if (commissionCount > 0 || homeworkCount > 0) {
+            mainSectionTitle.style.display = 'block';
+        } else {
+            mainSectionTitle.style.display = 'none';
+        }
     }
 
     render();
