@@ -81,7 +81,7 @@
             background-color: #ffffff;
         }
 
-        /* 오늘 마감 섹션 */
+        /* 마감 임박/지남 섹션 */
         .today-section {
             background-color: #fff1f2;
             border: 2px solid #fecdd3;
@@ -393,7 +393,7 @@
 <body>
 
 <div class="container">
-    <h1> 📝 오늘의 할 일</h1>
+    <h1>📝 오늘의 할 일</h1>
 
     <!-- 빠른 메모 칸 -->
     <div class="memo-section">
@@ -401,9 +401,9 @@
         <textarea id="quickMemo" class="memo-textarea" placeholder="자유롭게 메모를 남겨보세요... (자동 저장)"></textarea>
     </div>
 
-    <!-- 오늘 마감 섹션 -->
+    <!-- 마감 임박 / 지남 섹션 -->
     <div id="todaySection" class="today-section" style="display: none;">
-        <h2>🚨 오늘 마감인 할 일!</h2>
+        <h2>🚨 마감 임박 / 지남!</h2>
         <div id="todayList"></div>
     </div>
 
@@ -771,35 +771,39 @@
         homeworkList.innerHTML = '';
         todayList.innerHTML = '';
 
-        let todayCount = 0;
+        let alertCount = 0;
         let commissionCount = 0;
         let homeworkCount = 0;
 
         todos.forEach(todo => {
-            if (todo.dueDate === todayStr) {
-                todayCount++;
+            // 1. 당일 또는 지난 마감일(마감 임박/지남) 체크
+            if (todo.dueDate && todo.dueDate <= todayStr) {
+                alertCount++;
+                const isPast = todo.dueDate < todayStr;
                 const item = document.createElement('div');
                 item.style.fontSize = '0.9rem';
                 item.style.marginBottom = '6px';
-                item.style.color = '#9f1239';
-                item.innerHTML = `📌 <strong>${todo.title}</strong>`;
+                item.style.color = isPast ? '#b91c1c' : '#9f1239';
+                item.innerHTML = `📌 <strong>${todo.title}</strong> <span style="font-size: 0.8rem; opacity: 0.85;">(${isPast ? '지남: ' : ''}${todo.dueDate})</span>`;
                 todayList.appendChild(item);
             }
 
             if (todo.type === 'project') {
                 todo.subtasks.forEach(sub => {
-                    if (sub.dueDate === todayStr && !sub.completed) {
-                        todayCount++;
+                    if (sub.dueDate && sub.dueDate <= todayStr && !sub.completed) {
+                        alertCount++;
+                        const isPast = sub.dueDate < todayStr;
                         const item = document.createElement('div');
                         item.style.fontSize = '0.9rem';
                         item.style.marginBottom = '6px';
-                        item.style.color = '#9f1239';
-                        item.innerHTML = `📌 <strong>${sub.text}</strong> (${todo.title})`;
+                        item.style.color = isPast ? '#b91c1c' : '#9f1239';
+                        item.innerHTML = `📌 <strong>${sub.text}</strong> <span style="font-size: 0.8rem; opacity: 0.85;">(${todo.title} - ${isPast ? '지남: ' : ''}${sub.dueDate})</span>`;
                         todayList.appendChild(item);
                     }
                 });
             }
 
+            // 2. 카테고리별 카드 배치
             const cardElement = createCardElement(todo);
 
             if (todo.category === 'commission') {
@@ -813,7 +817,9 @@
             }
         });
 
-        todaySection.style.display = todayCount > 0 ? 'block' : 'none';
+        // 마감 임박/지남 섹션 표시 여부
+        todaySection.style.display = alertCount > 0 ? 'block' : 'none';
+        
         commissionSection.style.display = commissionCount > 0 ? 'block' : 'none';
         homeworkSection.style.display = homeworkCount > 0 ? 'block' : 'none';
 
