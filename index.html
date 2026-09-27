@@ -81,7 +81,7 @@
             background-color: #ffffff;
         }
 
-        /* 오늘 마감 / 지나침 알림 섹션 */
+        /* 마감 알림 섹션 */
         .due-alert-section {
             background-color: #fff1f2;
             border: 2px solid #fecdd3;
@@ -100,7 +100,7 @@
             gap: 6px;
         }
 
-        /* 특수 분류 전용 영역 */
+        /* 분류 전용 영역 */
         .category-group {
             margin-bottom: 20px;
         }
@@ -112,7 +112,7 @@
             border-bottom: 2px solid #bae6fd;
         }
 
-        /* 메인 추가 버튼 */
+        /* 추가 버튼 */
         .add-btn-main {
             width: 100%;
             padding: 14px;
@@ -133,7 +133,7 @@
             box-shadow: 0 6px 18px rgba(59, 130, 246, 0.4);
         }
 
-        /* 스와이프 가능한 할 일 카드 컨테이너 */
+        /* 스와이프 카드 */
         .todo-card-wrapper {
             position: relative;
             margin-bottom: 16px;
@@ -216,8 +216,8 @@
             height: 100%;
             width: 100%;
             border-radius: 10px;
-            /* 부드러운 반응형 퍼센티지 애니메이션 효과 */
-            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            /* 부드러운 게이지 축소 애니메이션 */
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .progress-text {
             font-size: 0.85rem;
@@ -225,6 +225,12 @@
             color: var(--text-sub);
             margin-top: 6px;
             font-weight: 600;
+        }
+        .percent-val {
+            color: #2563eb;
+            font-size: 0.95rem;
+            display: inline-block;
+            transition: transform 0.1s;
         }
 
         /* 서브 태스크 */
@@ -415,7 +421,7 @@
 
     <button class="add-btn-main" onclick="openModal()">+ 새 할 일 추가하기</button>
 
-    <!-- 특성별 섹션들 (동적 표시) -->
+    <!-- 특성별 섹션들 -->
     <div id="todayTaskSection" class="category-group" style="display: none;">
         <div class="category-title" style="color: #0284c7;">☀️ 오늘 할 일 목록</div>
         <div id="todayTaskList"></div>
@@ -495,13 +501,11 @@
         return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     }
 
-    // 날짜 변경 감지 및 '오늘 할 일' 자동 삭제 검사
     function checkDateChangeAndCleanup() {
         const todayStr = getTodayString();
         const lastVisitedDate = localStorage.getItem('lastVisitedDate');
 
         if (lastVisitedDate && lastVisitedDate !== todayStr) {
-            // 날짜가 지나 변경된 경우 '☀️ 오늘 할 일' 카테고리 항목 자동 삭제
             todos = todos.filter(t => t.category !== 'today');
             localStorage.setItem('myTodos', JSON.stringify(todos));
         }
@@ -510,7 +514,6 @@
 
     checkDateChangeAndCleanup();
 
-    // 특성 변경 시 오늘 할 일이면 마감기한 비활성화 처리
     function handleCategoryChange() {
         const category = document.getElementById('todoCategory').value;
         const dueDateInput = document.getElementById('todoDueDate');
@@ -539,7 +542,6 @@
 
     function saveData() {
         localStorage.setItem('myTodos', JSON.stringify(todos));
-        render();
     }
 
     function openModal(editId = null) {
@@ -595,6 +597,7 @@
         });
 
         saveData();
+        render();
         closeModal();
     }
 
@@ -615,6 +618,7 @@
         todo.dueDate = (category === 'today') ? null : (document.getElementById('todoDueDate').value || null);
 
         saveData();
+        render();
         closeModal();
     }
 
@@ -638,11 +642,71 @@
 
         if (type === 'todo') {
             todos = todos.filter(t => t.id !== todoId);
+            saveData();
+            render();
         } else if (type === 'subtask') {
             const todo = todos.find(t => t.id === todoId);
-            if (todo) todo.subtasks = todo.subtasks.filter(s => s.id !== subtaskId);
+            if (todo) {
+                todo.subtasks = todo.subtasks.filter(s => s.id !== subtaskId);
+                saveData();
+                updateProgressUI(todoId);
+                renderSubtasksUI(todoId);
+            }
         }
-        saveData();
+    }
+
+    // 숫자 퍼센트 부드럽게 감소/증가 애니메이션 함수
+    function animatePercentage(element, startVal, endVal, duration = 500) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const currentVal = Math.floor(progress * (endVal - startVal) + startVal);
+            element.innerText = currentVal;
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                element.innerText = endVal;
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    // 부분 업데이트: 전체를 다시 안 그리고 프로그래스 바만 부드럽게 업데이트
+    function updateProgressUI(todoId) {
+        const todo = todos.find(t => t.id === todoId);
+        if (!todo || todo.type !== 'project') return;
+
+        const total = todo.subtasks.length;
+        const completedCount = todo.subtasks.filter(s => s.completed).length;
+        const targetPercent = total === 0 ? 100 : Math.round(((total - completedCount) / total) * 100);
+
+        const barFill = document.getElementById(`bar-${todoId}`);
+        const percentSpan = document.getElementById(`percent-${todoId}`);
+
+        if (barFill && percentSpan) {
+            const currentPercent = parseInt(percentSpan.innerText) || 0;
+            barFill.style.width = `${targetPercent}%`;
+            animatePercentage(percentSpan, currentPercent, targetPercent, 450);
+        }
+    }
+
+    // 세부 항목 리스트 부분 렌더링
+    function renderSubtasksUI(todoId) {
+        const todo = todos.find(t => t.id === todoId);
+        const subListEl = document.getElementById(`sublist-${todoId}`);
+        if (!todo || !subListEl) return;
+
+        subListEl.innerHTML = todo.subtasks.map(sub => `
+            <div class="subtask-item ${sub.completed ? 'completed' : ''}">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask(${todo.id}, ${sub.id})">
+                    <span>${sub.text}</span>
+                    ${sub.dueDate ? `<span class="due-date">📅 ${sub.dueDate}</span>` : ''}
+                </div>
+                <button class="btn-delete" onclick="openDeleteModal('subtask', ${todo.id}, ${sub.id})">✕</button>
+            </div>
+        `).join('');
     }
 
     function addSubtask(todoId) {
@@ -661,6 +725,11 @@
         });
 
         saveData();
+        input.value = '';
+        dateInput.value = '';
+        
+        updateProgressUI(todoId);
+        renderSubtasksUI(todoId);
     }
 
     function toggleSubtask(todoId, subtaskId) {
@@ -668,6 +737,9 @@
         const subtask = todo.subtasks.find(s => s.id === subtaskId);
         subtask.completed = !subtask.completed;
         saveData();
+        
+        updateProgressUI(todoId);
+        renderSubtasksUI(todoId);
     }
 
     function initSwipe(cardEl, id) {
@@ -701,6 +773,7 @@
                 setTimeout(() => {
                     todos = todos.filter(t => t.id !== id);
                     saveData();
+                    render();
                 }, 200);
             } else {
                 cardEl.style.transform = `translateX(0px)`;
@@ -750,17 +823,6 @@
             const completedCount = todo.subtasks.filter(s => s.completed).length;
             const remainingPercent = total === 0 ? 100 : Math.round(((total - completedCount) / total) * 100);
 
-            let subtaskHTML = todo.subtasks.map(sub => `
-                <div class="subtask-item ${sub.completed ? 'completed' : ''}">
-                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask(${todo.id}, ${sub.id})">
-                        <span>${sub.text}</span>
-                        ${sub.dueDate ? `<span class="due-date">📅 ${sub.dueDate}</span>` : ''}
-                    </div>
-                    <button class="btn-delete" onclick="openDeleteModal('subtask', ${todo.id}, ${sub.id})">✕</button>
-                </div>
-            `).join('');
-
             wrapper.innerHTML = `
                 <div class="todo-header">
                     <div class="todo-title">
@@ -775,13 +837,13 @@
                 
                 <div class="progress-container">
                     <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: ${remainingPercent}%;"></div>
+                        <div class="progress-bar-fill" id="bar-${todo.id}" style="width: ${remainingPercent}%;"></div>
                     </div>
-                    <div class="progress-text">남은 할 일: <strong>${remainingPercent}%</strong></div>
+                    <div class="progress-text">남은 할 일: <strong class="percent-val"><span id="percent-${todo.id}">${remainingPercent}</span>%</strong></div>
                 </div>
 
                 <div class="subtasks-list">
-                    ${subtaskHTML}
+                    <div id="sublist-${todo.id}"></div>
                     <div class="subtask-input-group">
                         <input type="text" id="subInput-${todo.id}" placeholder="세부 할 일 입력...">
                         <input type="date" id="subDate-${todo.id}">
@@ -789,6 +851,8 @@
                     </div>
                 </div>
             `;
+
+            setTimeout(() => renderSubtasksUI(todo.id), 0);
         }
 
         return wrapper;
@@ -821,7 +885,6 @@
         let homeworkCount = 0;
 
         todos.forEach(todo => {
-            // 1. 마감일 기반 오늘/지남 알림 상단 바
             if (todo.dueDate && todo.dueDate <= todayStr) {
                 alertCount++;
                 const isPast = todo.dueDate < todayStr;
@@ -848,7 +911,6 @@
                 });
             }
 
-            // 2. 특성별 카드 그룹화 및 배치
             const cardElement = createCardElement(todo);
 
             if (todo.category === 'today') {
