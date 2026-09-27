@@ -201,7 +201,7 @@
             white-space: nowrap;
         }
 
-        /* 프로그래스 바 */
+        /* 프로그래스 바 & 애니메이션 */
         .progress-container {
             margin-top: 14px;
         }
@@ -216,7 +216,8 @@
             height: 100%;
             width: 100%;
             border-radius: 10px;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            /* 부드러운 반응형 퍼센티지 애니메이션 효과 */
+            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .progress-text {
             font-size: 0.85rem;
@@ -351,6 +352,11 @@
             font-size: 0.95rem;
             background-color: #f8fafc;
         }
+        .form-group input:disabled {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
 
         .modal-btns {
             display: flex;
@@ -393,7 +399,7 @@
 <body>
 
 <div class="container">
-    <h1>🩵 스마트 할 일 관리</h1>
+    <h1>📝 스마트 할 일 관리</h1>
 
     <!-- 빠른 메모 칸 -->
     <div class="memo-section">
@@ -438,7 +444,7 @@
         <h3 id="modalTitle">✨ 새 할 일 추가</h3>
         <div class="form-group">
             <label>특성 분류</label>
-            <select id="todoCategory">
+            <select id="todoCategory" onchange="handleCategoryChange()">
                 <option value="none">일반 할 일</option>
                 <option value="today">☀️ 오늘 할 일</option>
                 <option value="commission">🎨 커미션</option>
@@ -484,7 +490,39 @@
     let deleteTarget = null;
     let editingTodoId = null;
 
-    // 메모장 높이 자동조절 함수
+    function getTodayString() {
+        const today = new Date();
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    }
+
+    // 날짜 변경 감지 및 '오늘 할 일' 자동 삭제 검사
+    function checkDateChangeAndCleanup() {
+        const todayStr = getTodayString();
+        const lastVisitedDate = localStorage.getItem('lastVisitedDate');
+
+        if (lastVisitedDate && lastVisitedDate !== todayStr) {
+            // 날짜가 지나 변경된 경우 '☀️ 오늘 할 일' 카테고리 항목 자동 삭제
+            todos = todos.filter(t => t.category !== 'today');
+            localStorage.setItem('myTodos', JSON.stringify(todos));
+        }
+        localStorage.setItem('lastVisitedDate', todayStr);
+    }
+
+    checkDateChangeAndCleanup();
+
+    // 특성 변경 시 오늘 할 일이면 마감기한 비활성화 처리
+    function handleCategoryChange() {
+        const category = document.getElementById('todoCategory').value;
+        const dueDateInput = document.getElementById('todoDueDate');
+
+        if (category === 'today') {
+            dueDateInput.value = '';
+            dueDateInput.disabled = true;
+        } else {
+            dueDateInput.disabled = false;
+        }
+    }
+
     function autoResizeMemo(el) {
         el.style.height = 'auto';
         el.style.height = el.scrollHeight + 'px';
@@ -528,6 +566,7 @@
             saveBtn.onclick = addTodo;
         }
 
+        handleCategoryChange();
         document.getElementById('todoModal').style.display = 'flex';
     }
 
@@ -551,7 +590,7 @@
             id: Date.now(),
             category,
             type, title,
-            dueDate: dueDate || null,
+            dueDate: (category === 'today') ? null : (dueDate || null),
             subtasks: []
         });
 
@@ -569,10 +608,11 @@
             return;
         }
 
-        todo.category = document.getElementById('todoCategory').value;
+        const category = document.getElementById('todoCategory').value;
+        todo.category = category;
         todo.type = document.getElementById('todoType').value;
         todo.title = title;
-        todo.dueDate = document.getElementById('todoDueDate').value || null;
+        todo.dueDate = (category === 'today') ? null : (document.getElementById('todoDueDate').value || null);
 
         saveData();
         closeModal();
@@ -628,11 +668,6 @@
         const subtask = todo.subtasks.find(s => s.id === subtaskId);
         subtask.completed = !subtask.completed;
         saveData();
-    }
-
-    function getTodayString() {
-        const today = new Date();
-        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     }
 
     function initSwipe(cardEl, id) {
@@ -830,13 +865,11 @@
             }
         });
 
-        // 각 특성/상태별 섹션 자동 표시 및 숨김 처리
         dueAlertSection.style.display = alertCount > 0 ? 'block' : 'none';
         todayTaskSection.style.display = todayTaskCount > 0 ? 'block' : 'none';
         commissionSection.style.display = commissionCount > 0 ? 'block' : 'none';
         homeworkSection.style.display = homeworkCount > 0 ? 'block' : 'none';
 
-        // 특수한 특성 영역이 생성된 경우에만 '기타 및 일반 할 일' 제목 표시
         if (todayTaskCount > 0 || commissionCount > 0 || homeworkCount > 0) {
             mainSectionTitle.style.display = 'block';
         } else {
