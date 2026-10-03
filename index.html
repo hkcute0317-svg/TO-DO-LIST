@@ -167,7 +167,6 @@
             touch-action: pan-y;
         }
 
-        /* 세부목록 전용 독자 카드 */
         .todo-card-standalone {
             background: var(--card-bg);
             border-radius: var(--border-radius);
@@ -216,7 +215,6 @@
             height: 100%;
             width: 100%;
             border-radius: 10px;
-            /* 부드러운 게이지 축소 애니메이션 */
             transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .progress-text {
@@ -230,10 +228,9 @@
             color: #2563eb;
             font-size: 0.95rem;
             display: inline-block;
-            transition: transform 0.1s;
         }
 
-        /* 서브 태스크 */
+        /* 서브 태스크 & 중첩 접기 스타일 */
         .subtasks-list {
             margin-top: 14px;
             border-top: 1px solid #f1f5f9;
@@ -243,43 +240,93 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.95rem;
+            font-size: 0.93rem;
             margin-top: 8px;
             padding: 6px 8px;
             border-radius: 8px;
+            background-color: #f8fafc;
         }
         .subtask-item.completed span {
             text-decoration: line-through;
             color: #94a3b8;
         }
 
+        /* 중첩(접기/펼치기) 아코디언 스타일 */
+        .nested-details {
+            margin-top: 10px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 8px 12px;
+        }
+        .nested-summary {
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            color: #0369a1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            outline: none;
+            list-style: none;
+        }
+        .nested-summary::-webkit-details-marker {
+            display: none;
+        }
+        .nested-summary::before {
+            content: '▶ ';
+            font-size: 0.75rem;
+            margin-right: 6px;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+        .nested-details[open] > .nested-summary::before {
+            transform: rotate(90deg);
+        }
+        .nested-content {
+            margin-top: 10px;
+            padding-left: 10px;
+            border-left: 2px solid #93c5fd;
+        }
+
         .subtask-input-group {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .subtask-input-group select {
+            padding: 6px;
+            border: 1.5px solid #bae6fd;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            outline: none;
+            background: #ffffff;
         }
         .subtask-input-group input[type="text"] {
             flex: 1;
-            padding: 8px 12px;
+            min-width: 140px;
+            padding: 6px 10px;
             border: 1.5px solid #bae6fd;
-            border-radius: 12px;
+            border-radius: 10px;
             outline: none;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
         }
         .subtask-input-group input[type="date"] {
             border: 1.5px solid #bae6fd;
-            border-radius: 12px;
-            padding: 6px 8px;
+            border-radius: 10px;
+            padding: 4px 6px;
             outline: none;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
         .subtask-input-group button {
             background: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 12px;
-            padding: 8px 14px;
+            border-radius: 10px;
+            padding: 6px 12px;
             font-weight: 600;
+            font-size: 0.85rem;
             cursor: pointer;
         }
 
@@ -292,7 +339,6 @@
             font-size: 0.85rem;
             padding: 4px 8px;
             border-radius: 8px;
-            transition: all 0.2s;
         }
         .btn-action:hover {
             background-color: #f1f5f9;
@@ -622,8 +668,8 @@
         closeModal();
     }
 
-    function openDeleteModal(type, todoId, subtaskId = null) {
-        deleteTarget = { type, todoId, subtaskId };
+    function openDeleteModal(type, todoId, subtaskId = null, nestedId = null) {
+        deleteTarget = { type, todoId, subtaskId, nestedId };
         document.getElementById('deleteModal').style.display = 'flex';
         document.getElementById('confirmDeleteBtn').onclick = () => {
             executeDelete();
@@ -638,7 +684,7 @@
 
     function executeDelete() {
         if (!deleteTarget) return;
-        const { type, todoId, subtaskId } = deleteTarget;
+        const { type, todoId, subtaskId, nestedId } = deleteTarget;
 
         if (type === 'todo') {
             todos = todos.filter(t => t.id !== todoId);
@@ -652,10 +698,18 @@
                 updateProgressUI(todoId);
                 renderSubtasksUI(todoId);
             }
+        } else if (type === 'nested') {
+            const todo = todos.find(t => t.id === todoId);
+            const parentSub = todo ? todo.subtasks.find(s => s.id === subtaskId) : null;
+            if (parentSub && parentSub.items) {
+                parentSub.items = parentSub.items.filter(n => n.id !== nestedId);
+                saveData();
+                updateProgressUI(todoId);
+                renderSubtasksUI(todoId);
+            }
         }
     }
 
-    // 숫자 퍼센트 부드럽게 감소/증가 애니메이션 함수
     function animatePercentage(element, startVal, endVal, duration = 500) {
         let startTimestamp = null;
         const step = (timestamp) => {
@@ -672,15 +726,38 @@
         window.requestAnimationFrame(step);
     }
 
-    // 부분 업데이트: 전체를 다시 안 그리고 프로그래스 바만 부드럽게 업데이트
+    // 상위 % 재계산 (중첩 항목 포함 연산)
+    function calculateTodoProgress(todo) {
+        if (!todo || !todo.subtasks || todo.subtasks.length === 0) return 100;
+
+        let totalPoints = 0;
+        let completedPoints = 0;
+
+        todo.subtasks.forEach(sub => {
+            if (sub.type === 'list') {
+                const subItems = sub.items || [];
+                if (subItems.length === 0) {
+                    totalPoints += 1;
+                    if (sub.completed) completedPoints += 1;
+                } else {
+                    totalPoints += subItems.length;
+                    completedPoints += subItems.filter(i => i.completed).length;
+                }
+            } else {
+                totalPoints += 1;
+                if (sub.completed) completedPoints += 1;
+            }
+        });
+
+        if (totalPoints === 0) return 100;
+        return Math.round(((totalPoints - completedPoints) / totalPoints) * 100);
+    }
+
     function updateProgressUI(todoId) {
         const todo = todos.find(t => t.id === todoId);
         if (!todo || todo.type !== 'project') return;
 
-        const total = todo.subtasks.length;
-        const completedCount = todo.subtasks.filter(s => s.completed).length;
-        const targetPercent = total === 0 ? 100 : Math.round(((total - completedCount) / total) * 100);
-
+        const targetPercent = calculateTodoProgress(todo);
         const barFill = document.getElementById(`bar-${todoId}`);
         const percentSpan = document.getElementById(`percent-${todoId}`);
 
@@ -691,43 +768,117 @@
         }
     }
 
-    // 세부 항목 리스트 부분 렌더링
+    // 세부목록 및 중첩 세부목록 UI 렌더링
     function renderSubtasksUI(todoId) {
         const todo = todos.find(t => t.id === todoId);
         const subListEl = document.getElementById(`sublist-${todoId}`);
         if (!todo || !subListEl) return;
 
-        subListEl.innerHTML = todo.subtasks.map(sub => `
-            <div class="subtask-item ${sub.completed ? 'completed' : ''}">
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask(${todo.id}, ${sub.id})">
-                    <span>${sub.text}</span>
-                    ${sub.dueDate ? `<span class="due-date">📅 ${sub.dueDate}</span>` : ''}
-                </div>
-                <button class="btn-delete" onclick="openDeleteModal('subtask', ${todo.id}, ${sub.id})">✕</button>
-            </div>
-        `).join('');
+        subListEl.innerHTML = todo.subtasks.map(sub => {
+            if (sub.type === 'list') {
+                const subItems = sub.items || [];
+                const total = subItems.length;
+                const completed = subItems.filter(i => i.completed).length;
+                const subPercent = total === 0 ? 100 : Math.round(((total - completed) / total) * 100);
+
+                let nestedHTML = subItems.map(n => `
+                    <div class="subtask-item ${n.completed ? 'completed' : ''}">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" ${n.completed ? 'checked' : ''} onchange="toggleNestedItem(${todo.id}, ${sub.id}, ${n.id})">
+                            <span>${n.text}</span>
+                        </div>
+                        <button class="btn-delete" onclick="openDeleteModal('nested', ${todo.id}, ${sub.id}, ${n.id})">✕</button>
+                    </div>
+                `).join('');
+
+                return `
+                    <details class="nested-details">
+                        <summary class="nested-summary">
+                            <span>📂 ${sub.text}</span>
+                            <span style="font-size: 0.85rem; color: #0284c7;">남은 할 일: <strong>${subPercent}%</strong></span>
+                        </summary>
+                        <div class="nested-content">
+                            ${nestedHTML}
+                            <div class="subtask-input-group" style="margin-top: 8px;">
+                                <input type="text" id="nestedInput-${todo.id}-${sub.id}" placeholder="하위 세부항목 입력...">
+                                <button onclick="addNestedItem(${todo.id}, ${sub.id})">추가</button>
+                                <button class="btn-delete" style="margin-left: auto;" onclick="openDeleteModal('subtask', ${todo.id}, ${sub.id})">세부목록 삭제</button>
+                            </div>
+                        </div>
+                    </details>
+                `;
+            } else {
+                return `
+                    <div class="subtask-item ${sub.completed ? 'completed' : ''}">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask(${todo.id}, ${sub.id})">
+                            <span>${sub.text}</span>
+                            ${sub.dueDate ? `<span class="due-date">📅 ${sub.dueDate}</span>` : ''}
+                        </div>
+                        <button class="btn-delete" onclick="openDeleteModal('subtask', ${todo.id}, ${sub.id})">✕</button>
+                    </div>
+                `;
+            }
+        }).join('');
     }
 
     function addSubtask(todoId) {
+        const typeSelect = document.getElementById(`subType-${todoId}`);
         const input = document.getElementById(`subInput-${todoId}`);
         const dateInput = document.getElementById(`subDate-${todoId}`);
+        
+        const subType = typeSelect ? typeSelect.value : 'simple';
         const text = input.value.trim();
 
         if (!text) return;
 
         const todo = todos.find(t => t.id === todoId);
-        todo.subtasks.push({
+
+        if (subType === 'list') {
+            todo.subtasks.push({
+                id: Date.now(),
+                type: 'list',
+                text,
+                items: []
+            });
+        } else {
+            todo.subtasks.push({
+                id: Date.now(),
+                type: 'simple',
+                text,
+                completed: false,
+                dueDate: dateInput ? (dateInput.value || null) : null
+            });
+        }
+
+        saveData();
+        input.value = '';
+        if (dateInput) dateInput.value = '';
+
+        updateProgressUI(todoId);
+        renderSubtasksUI(todoId);
+    }
+
+    function addNestedItem(todoId, subtaskId) {
+        const input = document.getElementById(`nestedInput-${todoId}-${subtaskId}`);
+        const text = input.value.trim();
+
+        if (!text) return;
+
+        const todo = todos.find(t => t.id === todoId);
+        const subtask = todo.subtasks.find(s => s.id === subtaskId);
+
+        if (!subtask.items) subtask.items = [];
+
+        subtask.items.push({
             id: Date.now(),
             text,
-            completed: false,
-            dueDate: dateInput.value || null
+            completed: false
         });
 
         saveData();
         input.value = '';
-        dateInput.value = '';
-        
+
         updateProgressUI(todoId);
         renderSubtasksUI(todoId);
     }
@@ -736,10 +887,34 @@
         const todo = todos.find(t => t.id === todoId);
         const subtask = todo.subtasks.find(s => s.id === subtaskId);
         subtask.completed = !subtask.completed;
+
         saveData();
-        
         updateProgressUI(todoId);
         renderSubtasksUI(todoId);
+    }
+
+    function toggleNestedItem(todoId, subtaskId, nestedId) {
+        const todo = todos.find(t => t.id === todoId);
+        const subtask = todo.subtasks.find(s => s.id === subtaskId);
+        const nestedItem = subtask.items.find(i => i.id === nestedId);
+
+        nestedItem.completed = !nestedItem.completed;
+
+        saveData();
+        updateProgressUI(todoId);
+        renderSubtasksUI(todoId);
+    }
+
+    function handleSubTypeChange(todoId) {
+        const typeSelect = document.getElementById(`subType-${todoId}`);
+        const dateInput = document.getElementById(`subDate-${todoId}`);
+        if (typeSelect && dateInput) {
+            if (typeSelect.value === 'list') {
+                dateInput.style.display = 'none';
+            } else {
+                dateInput.style.display = 'inline-block';
+            }
+        }
     }
 
     function initSwipe(cardEl, id) {
@@ -819,9 +994,7 @@
 
         } else {
             wrapper.className = 'todo-card-standalone';
-            const total = todo.subtasks.length;
-            const completedCount = todo.subtasks.filter(s => s.completed).length;
-            const remainingPercent = total === 0 ? 100 : Math.round(((total - completedCount) / total) * 100);
+            const remainingPercent = calculateTodoProgress(todo);
 
             wrapper.innerHTML = `
                 <div class="todo-header">
@@ -845,7 +1018,11 @@
                 <div class="subtasks-list">
                     <div id="sublist-${todo.id}"></div>
                     <div class="subtask-input-group">
-                        <input type="text" id="subInput-${todo.id}" placeholder="세부 할 일 입력...">
+                        <select id="subType-${todo.id}" onchange="handleSubTypeChange(${todo.id})">
+                            <option value="simple">일반 항목</option>
+                            <option value="list">📂 세부목록 방식</option>
+                        </select>
+                        <input type="text" id="subInput-${todo.id}" placeholder="세부 항목 입력...">
                         <input type="date" id="subDate-${todo.id}">
                         <button onclick="addSubtask(${todo.id})">추가</button>
                     </div>
@@ -898,7 +1075,7 @@
 
             if (todo.type === 'project') {
                 todo.subtasks.forEach(sub => {
-                    if (sub.dueDate && sub.dueDate <= todayStr && !sub.completed) {
+                    if (sub.type !== 'list' && sub.dueDate && sub.dueDate <= todayStr && !sub.completed) {
                         alertCount++;
                         const isPast = sub.dueDate < todayStr;
                         const item = document.createElement('div');
