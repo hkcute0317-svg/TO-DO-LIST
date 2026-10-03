@@ -273,14 +273,14 @@
         .nested-summary::-webkit-details-marker {
             display: none;
         }
-        .nested-summary::before {
+        .nested-summary-title::before {
             content: '▶ ';
             font-size: 0.75rem;
             margin-right: 6px;
             transition: transform 0.2s;
             display: inline-block;
         }
-        .nested-details[open] > .nested-summary::before {
+        .nested-details[open] .nested-summary-title::before {
             transform: rotate(90deg);
         }
         .nested-content {
@@ -337,12 +337,12 @@
             color: var(--text-sub);
             cursor: pointer;
             font-size: 0.85rem;
-            padding: 4px 8px;
-            border-radius: 8px;
+            padding: 2px 6px;
+            border-radius: 6px;
         }
         .btn-action:hover {
-            background-color: #f1f5f9;
-            color: var(--text-color);
+            background-color: #e0f2fe;
+            color: #0284c7;
         }
         .btn-delete {
             background: none;
@@ -351,8 +351,8 @@
             cursor: pointer;
             font-weight: bold;
             font-size: 0.9rem;
-            padding: 4px 8px;
-            border-radius: 8px;
+            padding: 2px 6px;
+            border-radius: 6px;
         }
         .btn-delete:hover {
             color: var(--danger-color);
@@ -459,7 +459,7 @@
         <textarea id="quickMemo" class="memo-textarea" placeholder="자유롭게 메모를 남겨보세요... (자동 저장)"></textarea>
     </div>
 
-    <!-- 마감일 기반 알림 섹션 -->
+    <!-- 마감 알림 섹션 -->
     <div id="dueAlertSection" class="due-alert-section" style="display: none;">
         <h2>🚨 마감 오늘 / 지남!</h2>
         <div id="dueAlertList"></div>
@@ -726,7 +726,6 @@
         window.requestAnimationFrame(step);
     }
 
-    // 상위 % 재계산 (중첩 항목 포함 연산)
     function calculateTodoProgress(todo) {
         if (!todo || !todo.subtasks || todo.subtasks.length === 0) return 100;
 
@@ -768,7 +767,34 @@
         }
     }
 
-    // 세부목록 및 중첩 세부목록 UI 렌더링
+    /* 세부목록 및 하위 항목 수정 함수들 */
+    function editSubtaskText(todoId, subtaskId) {
+        const todo = todos.find(t => t.id === todoId);
+        const subtask = todo ? todo.subtasks.find(s => s.id === subtaskId) : null;
+        if (!subtask) return;
+
+        const newText = prompt('세부목록 제목 수정:', subtask.text);
+        if (newText !== null && newText.trim() !== '') {
+            subtask.text = newText.trim();
+            saveData();
+            renderSubtasksUI(todoId);
+        }
+    }
+
+    function editNestedItemText(todoId, subtaskId, nestedId) {
+        const todo = todos.find(t => t.id === todoId);
+        const subtask = todo ? todo.subtasks.find(s => s.id === subtaskId) : null;
+        const nestedItem = subtask && subtask.items ? subtask.items.find(n => n.id === nestedId) : null;
+        if (!nestedItem) return;
+
+        const newText = prompt('하위 세부항목 수정:', nestedItem.text);
+        if (newText !== null && newText.trim() !== '') {
+            nestedItem.text = newText.trim();
+            saveData();
+            renderSubtasksUI(todoId);
+        }
+    }
+
     function renderSubtasksUI(todoId) {
         const todo = todos.find(t => t.id === todoId);
         const subListEl = document.getElementById(`sublist-${todoId}`);
@@ -787,15 +813,21 @@
                             <input type="checkbox" ${n.completed ? 'checked' : ''} onchange="toggleNestedItem(${todo.id}, ${sub.id}, ${n.id})">
                             <span>${n.text}</span>
                         </div>
-                        <button class="btn-delete" onclick="openDeleteModal('nested', ${todo.id}, ${sub.id}, ${n.id})">✕</button>
+                        <div>
+                            <button class="btn-action" onclick="editNestedItemText(${todo.id}, ${sub.id}, ${n.id})">수정</button>
+                            <button class="btn-delete" onclick="openDeleteModal('nested', ${todo.id}, ${sub.id}, ${n.id})">✕</button>
+                        </div>
                     </div>
                 `).join('');
 
                 return `
                     <details class="nested-details">
                         <summary class="nested-summary">
-                            <span>📂 ${sub.text}</span>
-                            <span style="font-size: 0.85rem; color: #0284c7;">남은 할 일: <strong>${subPercent}%</strong></span>
+                            <span class="nested-summary-title">📂 ${sub.text}</span>
+                            <div style="display: flex; align-items: center; gap: 6px;" onclick="event.stopPropagation();">
+                                <span style="font-size: 0.85rem; color: #0284c7; margin-right: 4px;">남은 할 일: <strong>${subPercent}%</strong></span>
+                                <button class="btn-action" onclick="editSubtaskText(${todo.id}, ${sub.id})">수정</button>
+                            </div>
                         </summary>
                         <div class="nested-content">
                             ${nestedHTML}
@@ -815,7 +847,10 @@
                             <span>${sub.text}</span>
                             ${sub.dueDate ? `<span class="due-date">📅 ${sub.dueDate}</span>` : ''}
                         </div>
-                        <button class="btn-delete" onclick="openDeleteModal('subtask', ${todo.id}, ${sub.id})">✕</button>
+                        <div>
+                            <button class="btn-action" onclick="editSubtaskText(${todo.id}, ${sub.id})">수정</button>
+                            <button class="btn-delete" onclick="openDeleteModal('subtask', ${todo.id}, ${sub.id})">✕</button>
+                        </div>
                     </div>
                 `;
             }
