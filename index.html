@@ -40,37 +40,11 @@ body {
     max-width: 580px;
 }
 
-/* =========================
-   상단 제목
-========================= */
-
-.top-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
 h1 {
+    text-align: center;
     color: #2563eb;
     font-size: 1.6rem;
-    margin: 0;
-}
-
-.calendar-open-btn {
-    border: none;
-    background: white;
-    color: #2563eb;
-    border-radius: 12px;
-    padding: 9px 12px;
-    font-size: 0.9rem;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 3px 10px rgba(96,165,250,0.2);
-}
-
-.calendar-open-btn:hover {
-    background: #eff6ff;
+    margin-bottom: 20px;
 }
 
 /* =========================
@@ -88,9 +62,8 @@ h1 {
 
 .memo-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    cursor: pointer;
+    align-items: center;
 }
 
 .memo-section h2 {
@@ -109,14 +82,14 @@ h1 {
     border-radius: 8px;
     padding: 5px 9px;
     cursor: pointer;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .memo-body {
     margin-top: 10px;
 }
 
-.memo-body.collapsed {
+.memo-section.collapsed .memo-body {
     display: none;
 }
 
@@ -127,6 +100,7 @@ h1 {
     background-color: #f8fafc;
     border-radius: 12px;
     padding: 10px 12px;
+    box-sizing: border-box;
     font-family: inherit;
     font-size: 0.92rem;
     color: var(--text-color);
@@ -142,6 +116,31 @@ h1 {
 }
 
 /* =========================
+   상단 달력 버튼
+========================= */
+
+.top-tools {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
+.calendar-open-btn {
+    border: 1.5px solid #bae6fd;
+    background: white;
+    color: #0284c7;
+    border-radius: 12px;
+    padding: 8px 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(186,230,253,.25);
+}
+
+.calendar-open-btn:active {
+    transform: scale(.97);
+}
+
+/* =========================
    마감 알림
 ========================= */
 
@@ -151,16 +150,20 @@ h1 {
     border-radius: var(--border-radius);
     padding: 16px 20px;
     margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.08);
 }
 
 .due-alert-section h2 {
     margin: 0 0 10px 0;
     color: #e11d48;
     font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 /* =========================
-   카테고리
+   분류
 ========================= */
 
 .category-group {
@@ -218,6 +221,9 @@ h1 {
     color: white;
     font-weight: bold;
     font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     z-index: 1;
 }
 
@@ -243,7 +249,7 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
 }
 
 .todo-title {
@@ -254,10 +260,6 @@ h1 {
     gap: 8px;
     word-break: break-all;
 }
-
-/* =========================
-   마감일
-========================= */
 
 .due-date {
     font-size: 0.78rem;
@@ -289,7 +291,7 @@ h1 {
     height: 100%;
     width: 0%;
     border-radius: 10px;
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.4s ease;
 }
 
 .progress-text {
@@ -306,7 +308,7 @@ h1 {
 }
 
 /* =========================
-   세부목록
+   세부 목록
 ========================= */
 
 .subtasks-list {
@@ -319,12 +321,12 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     font-size: 0.93rem;
     margin-top: 8px;
     padding: 6px 8px;
     border-radius: 8px;
     background-color: #f8fafc;
-    gap: 8px;
 }
 
 .subtask-item.completed span {
@@ -365,6 +367,7 @@ h1 {
     font-size: 0.75rem;
     margin-right: 6px;
     display: inline-block;
+    transition: transform 0.2s;
 }
 
 .nested-details[open] .nested-summary-title::before {
@@ -377,10 +380,6 @@ h1 {
     border-left: 2px solid #93c5fd;
 }
 
-/* =========================
-   입력
-========================= */
-
 .subtask-input-group {
     display: flex;
     gap: 6px;
@@ -389,25 +388,23 @@ h1 {
 }
 
 .subtask-input-group select,
-.subtask-input-group input {
+.subtask-input-group input[type="date"] {
+    padding: 6px;
     border: 1.5px solid #bae6fd;
     border-radius: 10px;
+    font-size: 0.85rem;
     outline: none;
-    background: white;
-}
-
-.subtask-input-group select {
-    padding: 6px;
+    background: #ffffff;
 }
 
 .subtask-input-group input[type="text"] {
     flex: 1;
     min-width: 140px;
     padding: 6px 10px;
-}
-
-.subtask-input-group input[type="date"] {
-    padding: 4px 6px;
+    border: 1.5px solid #bae6fd;
+    border-radius: 10px;
+    outline: none;
+    font-size: 0.88rem;
 }
 
 .subtask-input-group button {
@@ -424,31 +421,35 @@ h1 {
    버튼
 ========================= */
 
-.btn-action,
-.btn-delete {
+.btn-action {
     background: none;
     border: none;
+    color: var(--text-sub);
     cursor: pointer;
-    padding: 4px 6px;
+    font-size: 0.85rem;
+    padding: 2px 6px;
     border-radius: 6px;
 }
 
-.btn-action {
-    color: var(--text-sub);
-}
-
 .btn-action:hover {
-    background: #e0f2fe;
+    background-color: #e0f2fe;
     color: #0284c7;
 }
 
 .btn-delete {
+    background: none;
+    border: none;
     color: #cbd5e1;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    padding: 2px 6px;
+    border-radius: 6px;
 }
 
 .btn-delete:hover {
     color: var(--danger-color);
-    background: #fef2f2;
+    background-color: #fef2f2;
 }
 
 /* =========================
@@ -475,11 +476,12 @@ h1 {
     max-width: 380px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .modal-content h3 {
     margin-top: 0;
+    margin-bottom: 16px;
 }
 
 .form-group {
@@ -501,7 +503,13 @@ h1 {
     border: 1.5px solid #bae6fd;
     border-radius: 12px;
     outline: none;
-    background: #f8fafc;
+    font-size: 0.95rem;
+    background-color: #f8fafc;
+}
+
+.form-group input:disabled {
+    background-color: #f1f5f9;
+    color: #94a3b8;
 }
 
 .modal-btns {
@@ -541,27 +549,44 @@ h1 {
 ========================= */
 
 .calendar-modal-content {
-    max-width: 460px;
+    max-width: 500px;
 }
 
 .calendar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 
-.calendar-title {
-    font-size: 1.05rem;
+.calendar-header button {
+    border: none;
+    background: #f1f5f9;
+    color: #475569;
+    border-radius: 9px;
+    padding: 7px 10px;
+    cursor: pointer;
     font-weight: 700;
 }
 
-.calendar-nav {
-    border: none;
-    background: #f1f5f9;
-    border-radius: 8px;
-    padding: 7px 11px;
-    cursor: pointer;
+.calendar-title {
+    font-weight: 800;
+    font-size: 1.05rem;
+}
+
+.calendar-week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.calendar-week div {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 700;
+    padding: 5px 0;
 }
 
 .calendar-grid {
@@ -570,72 +595,73 @@ h1 {
     gap: 4px;
 }
 
-.calendar-day-name {
-    text-align: center;
-    font-size: 0.75rem;
-    color: #64748b;
-    font-weight: 700;
-    padding: 5px 0;
-}
-
-.calendar-cell {
-    min-height: 65px;
+.calendar-day {
+    min-height: 58px;
+    background: #fff;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 4px;
+    border-radius: 9px;
+    padding: 5px;
     cursor: pointer;
-    background: white;
     overflow: hidden;
 }
 
-.calendar-cell:hover {
+.calendar-day:hover {
     background: #f8fafc;
 }
 
-.calendar-cell.selected {
+.calendar-day.selected {
     border: 2px solid #60a5fa;
     background: #eff6ff;
 }
 
-.calendar-cell.today {
-    box-shadow: inset 0 0 0 2px #bae6fd;
+.calendar-day.today {
+    background: #f0fdf4;
 }
 
 .calendar-number {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     font-weight: 700;
     margin-bottom: 3px;
 }
 
 .calendar-event {
-    background: #fecdd3;
-    color: #be123c;
     font-size: 0.62rem;
-    border-radius: 4px;
+    line-height: 1.2;
     padding: 2px 3px;
+    border-radius: 4px;
+    background: #dbeafe;
+    color: #1d4ed8;
     margin-top: 2px;
-    white-space: nowrap;
     overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.calendar-event.today-event {
+    background: #dcfce7;
+    color: #15803d;
 }
 
 .calendar-event.completed {
     background: #e2e8f0;
-    color: #64748b;
+    color: #94a3b8;
     text-decoration: line-through;
 }
 
-/* 달력 상세 */
-
 .calendar-detail {
     margin-top: 16px;
-    border-top: 1px solid #e2e8f0;
     padding-top: 14px;
+    border-top: 1px solid #e2e8f0;
 }
 
 .calendar-detail-title {
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 10px;
+}
+
+.calendar-detail-empty {
+    color: #94a3b8;
+    font-size: 0.85rem;
 }
 
 .calendar-detail-item {
@@ -643,8 +669,8 @@ h1 {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 9px 0;
-    border-bottom: 1px dashed #e2e8f0;
+    padding: 9px 4px;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .calendar-detail-left {
@@ -658,15 +684,10 @@ h1 {
     word-break: break-all;
 }
 
-.calendar-detail-buttons {
+.calendar-detail-actions {
     display: flex;
+    gap: 3px;
     flex-shrink: 0;
-    gap: 4px;
-}
-
-.calendar-empty {
-    color: #94a3b8;
-    font-size: 0.85rem;
 }
 
 .calendar-close {
@@ -677,13 +698,9 @@ h1 {
     border-radius: 12px;
     background: #334155;
     color: white;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
 }
-
-/* =========================
-   애니메이션
-========================= */
 
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -696,29 +713,27 @@ h1 {
 
 <div class="container">
 
-    <!-- 상단 -->
-    <div class="top-header">
-        <h1>📝 스마트 할 일 관리</h1>
+    <h1>📝 스마트 할 일 관리</h1>
 
-        <button class="calendar-open-btn" onclick="openCalendarModal()">
-            📅 달력
+    <!-- 상단 도구 -->
+    <div class="top-tools">
+        <button class="calendar-open-btn" onclick="openCalendar()">
+            📅 마감 달력
         </button>
     </div>
 
     <!-- 빠른 메모 -->
-    <div class="memo-section">
+    <div class="memo-section" id="memoSection">
 
-        <div class="memo-header" onclick="toggleMemo()">
+        <div class="memo-header">
             <h2>✏️ 빠른 메모장</h2>
 
-            <button class="memo-toggle"
-                    id="memoToggleBtn"
-                    onclick="event.stopPropagation(); toggleMemo();">
+            <button class="memo-toggle" id="memoToggle" onclick="toggleMemo()">
                 접기 ▲
             </button>
         </div>
 
-        <div class="memo-body" id="memoBody">
+        <div class="memo-body">
             <textarea
                 id="quickMemo"
                 class="memo-textarea"
@@ -734,6 +749,7 @@ h1 {
          style="display:none;">
 
         <h2>🚨 마감 오늘 / 지남!</h2>
+
         <div id="dueAlertList"></div>
 
     </div>
@@ -748,12 +764,12 @@ h1 {
          class="category-group"
          style="display:none;">
 
-        <div class="category-title"
-             style="color:#0284c7;">
+        <div class="category-title" style="color:#0284c7;">
             ☀️ 오늘 할 일 목록
         </div>
 
         <div id="todayTaskList"></div>
+
     </div>
 
     <!-- 커미션 -->
@@ -761,12 +777,12 @@ h1 {
          class="category-group"
          style="display:none;">
 
-        <div class="category-title"
-             style="color:#d97706;">
+        <div class="category-title" style="color:#d97706;">
             🎨 커미션 목록
         </div>
 
         <div id="commissionList"></div>
+
     </div>
 
     <!-- 숙제 -->
@@ -774,21 +790,22 @@ h1 {
          class="category-group"
          style="display:none;">
 
-        <div class="category-title"
-             style="color:#7e22ce;">
+        <div class="category-title" style="color:#7e22ce;">
             📚 숙제 목록
         </div>
 
         <div id="homeworkList"></div>
+
     </div>
 
     <!-- 일반 -->
-    <div id="mainSection"
-         class="category-group">
+    <div id="mainSection" class="category-group">
 
-        <div id="mainSectionTitle"
-             class="category-title"
-             style="color:#64748b; display:none;">
+        <div
+            class="category-title"
+            id="mainSectionTitle"
+            style="color:#64748b;display:none;"
+        >
             📋 기타 및 일반 할 일
         </div>
 
@@ -800,7 +817,7 @@ h1 {
 
 
 <!-- =========================
-     할 일 추가 / 수정
+     추가 / 수정 모달
 ========================= -->
 
 <div id="todoModal" class="modal">
@@ -824,7 +841,6 @@ h1 {
         </div>
 
         <div class="form-group">
-
             <label>표시 방식 선택</label>
 
             <select id="todoType">
@@ -838,11 +854,9 @@ h1 {
                 </option>
 
             </select>
-
         </div>
 
         <div class="form-group">
-
             <label>할 일 제목</label>
 
             <input
@@ -850,32 +864,27 @@ h1 {
                 id="todoTitle"
                 placeholder="할 일을 입력해주세요"
             >
-
         </div>
 
         <div class="form-group">
-
             <label>마감기한 (선택)</label>
 
             <input
                 type="date"
                 id="todoDueDate"
             >
-
         </div>
 
         <div class="modal-btns">
 
-            <button
-                class="btn-secondary"
-                onclick="closeModal()">
+            <button class="btn-secondary"
+                    onclick="closeModal()">
                 취소
             </button>
 
-            <button
-                class="btn-primary"
-                id="saveTodoBtn"
-                onclick="addTodo()">
+            <button class="btn-primary"
+                    id="saveTodoBtn"
+                    onclick="addTodo()">
                 추가하기
             </button>
 
@@ -896,15 +905,14 @@ h1 {
 
         <h3>🗑️ 진짜 삭제하시겠습니까?</h3>
 
-        <p style="color:var(--text-sub);">
+        <p style="color:var(--text-sub);font-size:.95rem;">
             삭제된 항목은 복구할 수 없습니다.
         </p>
 
         <div class="modal-btns">
 
-            <button
-                class="btn-secondary"
-                onclick="closeDeleteModal()">
+            <button class="btn-secondary"
+                    onclick="closeDeleteModal()">
                 취소
             </button>
 
@@ -931,9 +939,7 @@ h1 {
 
         <div class="calendar-header">
 
-            <button
-                class="calendar-nav"
-                onclick="changeCalendarMonth(-1)">
+            <button onclick="changeCalendarMonth(-1)">
                 ◀
             </button>
 
@@ -942,11 +948,21 @@ h1 {
                 class="calendar-title">
             </div>
 
-            <button
-                class="calendar-nav"
-                onclick="changeCalendarMonth(1)">
+            <button onclick="changeCalendarMonth(1)">
                 ▶
             </button>
+
+        </div>
+
+        <div class="calendar-week">
+
+            <div>일</div>
+            <div>월</div>
+            <div>화</div>
+            <div>수</div>
+            <div>목</div>
+            <div>금</div>
+            <div>토</div>
 
         </div>
 
@@ -960,7 +976,7 @@ h1 {
             <div
                 id="calendarDetailTitle"
                 class="calendar-detail-title">
-                날짜를 선택해주세요
+                날짜를 선택해주세요.
             </div>
 
             <div
@@ -971,7 +987,7 @@ h1 {
 
         <button
             class="calendar-close"
-            onclick="closeCalendarModal()">
+            onclick="closeCalendar()">
             닫기
         </button>
 
@@ -982,9 +998,9 @@ h1 {
 
 <script>
 
-/* =====================================================
+/* =========================================================
    데이터
-===================================================== */
+========================================================= */
 
 let todos =
     JSON.parse(localStorage.getItem('myTodos')) || [];
@@ -993,25 +1009,26 @@ let deleteTarget = null;
 let editingTodoId = null;
 
 
-/* =====================================================
+/* =========================================================
    날짜
-===================================================== */
+========================================================= */
 
 function getTodayString() {
 
     const today = new Date();
 
-    return `${today.getFullYear()}-${
-        String(today.getMonth() + 1).padStart(2, '0')
-    }-${
-        String(today.getDate()).padStart(2, '0')
-    }`;
+    return `${today.getFullYear()}-${String(
+        today.getMonth() + 1
+    ).padStart(2,'0')}-${String(
+        today.getDate()
+    ).padStart(2,'0')}`;
+
 }
 
 
-/* =====================================================
-   날짜 변경 시 '오늘 할 일' 초기화
-===================================================== */
+/* =========================================================
+   날짜 변경 처리
+========================================================= */
 
 function checkDateChangeAndCleanup() {
 
@@ -1031,6 +1048,7 @@ function checkDateChangeAndCleanup() {
             );
 
         saveData();
+
     }
 
     localStorage.setItem(
@@ -1042,22 +1060,9 @@ function checkDateChangeAndCleanup() {
 checkDateChangeAndCleanup();
 
 
-/* =====================================================
-   저장
-===================================================== */
-
-function saveData() {
-
-    localStorage.setItem(
-        'myTodos',
-        JSON.stringify(todos)
-    );
-}
-
-
-/* =====================================================
-   빠른 메모
-===================================================== */
+/* =========================================================
+   메모
+========================================================= */
 
 const memoTextarea =
     document.getElementById('quickMemo');
@@ -1072,8 +1077,8 @@ function autoResizeMemo(el) {
 
     el.style.height =
         el.scrollHeight + 'px';
-}
 
+}
 
 autoResizeMemo(memoTextarea);
 
@@ -1088,65 +1093,70 @@ memoTextarea.addEventListener(
         );
 
         autoResizeMemo(memoTextarea);
+
     }
 );
 
 
-/* 메모 접기 상태 저장 */
+function toggleMemo() {
 
-let memoCollapsed =
-    localStorage.getItem('memoCollapsed') === 'true';
-
-
-function applyMemoState() {
-
-    const body =
-        document.getElementById('memoBody');
+    const section =
+        document.getElementById('memoSection');
 
     const button =
-        document.getElementById('memoToggleBtn');
+        document.getElementById('memoToggle');
 
-    if (memoCollapsed) {
+    section.classList.toggle('collapsed');
 
-        body.classList.add('collapsed');
+    if (
+        section.classList.contains('collapsed')
+    ) {
+
         button.textContent = '펼치기 ▼';
 
     } else {
 
-        body.classList.remove('collapsed');
         button.textContent = '접기 ▲';
 
+        setTimeout(
+            () => autoResizeMemo(memoTextarea),
+            0
+        );
+
     }
+
 }
 
 
-function toggleMemo() {
+/* =========================================================
+   저장
+========================================================= */
 
-    memoCollapsed = !memoCollapsed;
+function saveData() {
 
     localStorage.setItem(
-        'memoCollapsed',
-        memoCollapsed
+        'myTodos',
+        JSON.stringify(todos)
     );
 
-    applyMemoState();
 }
 
 
-applyMemoState();
-
-
-/* =====================================================
-   모달
-===================================================== */
+/* =========================================================
+   분류 변경
+========================================================= */
 
 function handleCategoryChange() {
 
     const category =
-        document.getElementById('todoCategory').value;
+        document.getElementById(
+            'todoCategory'
+        ).value;
 
     const dateInput =
-        document.getElementById('todoDueDate');
+        document.getElementById(
+            'todoDueDate'
+        );
 
     if (category === 'today') {
 
@@ -1156,21 +1166,31 @@ function handleCategoryChange() {
     } else {
 
         dateInput.disabled = false;
+
     }
+
 }
 
+
+/* =========================================================
+   추가 / 수정 모달
+========================================================= */
 
 function openModal(editId = null) {
 
     editingTodoId = editId;
 
     const modalTitle =
-        document.getElementById('modalTitle');
+        document.getElementById(
+            'modalTitle'
+        );
 
     const saveBtn =
-        document.getElementById('saveTodoBtn');
+        document.getElementById(
+            'saveTodoBtn'
+        );
 
-    if (editId !== null) {
+    if (editId) {
 
         const todo =
             todos.find(t => t.id === editId);
@@ -1180,16 +1200,24 @@ function openModal(editId = null) {
         modalTitle.innerText =
             '✏️ 할 일 수정';
 
-        document.getElementById('todoCategory').value =
+        document.getElementById(
+            'todoCategory'
+        ).value =
             todo.category || 'none';
 
-        document.getElementById('todoType').value =
+        document.getElementById(
+            'todoType'
+        ).value =
             todo.type;
 
-        document.getElementById('todoTitle').value =
+        document.getElementById(
+            'todoTitle'
+        ).value =
             todo.title;
 
-        document.getElementById('todoDueDate').value =
+        document.getElementById(
+            'todoDueDate'
+        ).value =
             todo.dueDate || '';
 
         saveBtn.innerText =
@@ -1203,23 +1231,28 @@ function openModal(editId = null) {
         modalTitle.innerText =
             '✨ 새 할 일 추가';
 
-        document.getElementById('todoCategory').value =
-            'none';
+        document.getElementById(
+            'todoCategory'
+        ).value = 'none';
 
-        document.getElementById('todoType').value =
-            'simple';
+        document.getElementById(
+            'todoType'
+        ).value = 'simple';
 
-        document.getElementById('todoTitle').value =
-            '';
+        document.getElementById(
+            'todoTitle'
+        ).value = '';
 
-        document.getElementById('todoDueDate').value =
-            '';
+        document.getElementById(
+            'todoDueDate'
+        ).value = '';
 
         saveBtn.innerText =
             '추가하기';
 
         saveBtn.onclick =
             addTodo;
+
     }
 
     handleCategoryChange();
@@ -1227,6 +1260,7 @@ function openModal(editId = null) {
     document.getElementById(
         'todoModal'
     ).style.display = 'flex';
+
 }
 
 
@@ -1237,32 +1271,42 @@ function closeModal() {
     ).style.display = 'none';
 
     editingTodoId = null;
+
 }
 
 
-/* =====================================================
+/* =========================================================
    할 일 추가
-===================================================== */
+========================================================= */
 
 function addTodo() {
 
     const category =
-        document.getElementById('todoCategory').value;
+        document.getElementById(
+            'todoCategory'
+        ).value;
 
     const type =
-        document.getElementById('todoType').value;
+        document.getElementById(
+            'todoType'
+        ).value;
 
     const title =
-        document.getElementById('todoTitle')
-        .value.trim();
+        document.getElementById(
+            'todoTitle'
+        ).value.trim();
 
     const dueDate =
-        document.getElementById('todoDueDate').value;
+        document.getElementById(
+            'todoDueDate'
+        ).value;
 
     if (!title) {
 
         alert('제목을 입력해주세요.');
+
         return;
+
     }
 
     todos.push({
@@ -1289,12 +1333,13 @@ function addTodo() {
     render();
 
     closeModal();
+
 }
 
 
-/* =====================================================
+/* =========================================================
    할 일 수정
-===================================================== */
+========================================================= */
 
 function updateTodo() {
 
@@ -1306,22 +1351,30 @@ function updateTodo() {
     if (!todo) return;
 
     const title =
-        document.getElementById('todoTitle')
-        .value.trim();
+        document.getElementById(
+            'todoTitle'
+        ).value.trim();
 
     if (!title) {
 
         alert('제목을 입력해주세요.');
+
         return;
+
     }
 
     const category =
-        document.getElementById('todoCategory').value;
+        document.getElementById(
+            'todoCategory'
+        ).value;
 
-    todo.category = category;
+    todo.category =
+        category;
 
     todo.type =
-        document.getElementById('todoType').value;
+        document.getElementById(
+            'todoType'
+        ).value;
 
     todo.title =
         title;
@@ -1341,13 +1394,12 @@ function updateTodo() {
 
     closeModal();
 
-    renderCalendar();
 }
 
 
-/* =====================================================
+/* =========================================================
    삭제
-===================================================== */
+========================================================= */
 
 function openDeleteModal(
     type,
@@ -1374,7 +1426,9 @@ function openDeleteModal(
         executeDelete();
 
         closeDeleteModal();
+
     };
+
 }
 
 
@@ -1385,6 +1439,7 @@ function closeDeleteModal() {
     ).style.display = 'none';
 
     deleteTarget = null;
+
 }
 
 
@@ -1411,8 +1466,6 @@ function executeDelete() {
 
         render();
 
-        renderCalendar();
-
     }
 
 
@@ -1432,12 +1485,10 @@ function executeDelete() {
 
             saveData();
 
-            renderSubtasksUI(todoId);
+            render();
 
-            updateProgressUI(todoId);
-
-            renderCalendar();
         }
+
     }
 
 
@@ -1467,20 +1518,18 @@ function executeDelete() {
 
             saveData();
 
-            renderSubtasksUI(todoId);
+            render();
 
-            updateProgressUI(todoId);
-
-            renderCalendar();
         }
+
     }
+
 }
 
 
-/* =====================================================
-   진행률
-   0% → 100%
-===================================================== */
+/* =========================================================
+   진행률 계산
+========================================================= */
 
 function calculateTodoProgress(todo) {
 
@@ -1489,10 +1538,13 @@ function calculateTodoProgress(todo) {
         !todo.subtasks ||
         todo.subtasks.length === 0
     ) {
+
         return 0;
+
     }
 
     let totalPoints = 0;
+
     let completedPoints = 0;
 
 
@@ -1505,7 +1557,10 @@ function calculateTodoProgress(todo) {
 
             if (items.length === 0) {
 
-                totalPoints++;
+                totalPoints += 1;
+
+                if (sub.completed)
+                    completedPoints += 1;
 
             } else {
 
@@ -1516,76 +1571,29 @@ function calculateTodoProgress(todo) {
                     items.filter(
                         i => i.completed
                     ).length;
+
             }
 
         } else {
 
-            totalPoints++;
+            totalPoints += 1;
 
-            if (sub.completed) {
+            if (sub.completed)
+                completedPoints += 1;
 
-                completedPoints++;
-            }
         }
 
     });
 
 
-    if (totalPoints === 0) return 0;
+    if (totalPoints === 0)
+        return 0;
 
 
     return Math.round(
         (completedPoints / totalPoints) * 100
     );
-}
 
-
-function animatePercentage(
-    element,
-    startVal,
-    endVal,
-    duration = 450
-) {
-
-    let startTimestamp = null;
-
-    const step = timestamp => {
-
-        if (!startTimestamp) {
-            startTimestamp = timestamp;
-        }
-
-        const progress =
-            Math.min(
-                (timestamp - startTimestamp) /
-                duration,
-                1
-            );
-
-        const currentVal =
-            Math.floor(
-                progress *
-                (endVal - startVal) +
-                startVal
-            );
-
-        element.innerText =
-            currentVal;
-
-        if (progress < 1) {
-
-            window.requestAnimationFrame(
-                step
-            );
-
-        } else {
-
-            element.innerText =
-                endVal;
-        }
-    };
-
-    window.requestAnimationFrame(step);
 }
 
 
@@ -1601,8 +1609,7 @@ function updateProgressUI(todoId) {
         todo.type !== 'project'
     ) return;
 
-
-    const targetPercent =
+    const percent =
         calculateTodoProgress(todo);
 
     const bar =
@@ -1610,34 +1617,27 @@ function updateProgressUI(todoId) {
             `bar-${todoId}`
         );
 
-    const percent =
+    const text =
         document.getElementById(
             `percent-${todoId}`
         );
 
-
-    if (bar && percent) {
-
-        const current =
-            parseInt(
-                percent.innerText
-            ) || 0;
+    if (bar && text) {
 
         bar.style.width =
-            `${targetPercent}%`;
+            percent + '%';
 
-        animatePercentage(
-            percent,
-            current,
-            targetPercent
-        );
+        text.innerText =
+            percent;
+
     }
+
 }
 
 
-/* =====================================================
+/* =========================================================
    세부목록 수정
-===================================================== */
+========================================================= */
 
 function editSubtaskText(
     todoId,
@@ -1658,13 +1658,11 @@ function editSubtaskText(
 
     if (!subtask) return;
 
-
     const newText =
         prompt(
             '세부목록 제목 수정:',
             subtask.text
         );
-
 
     if (
         newText !== null &&
@@ -1678,8 +1676,8 @@ function editSubtaskText(
 
         renderSubtasksUI(todoId);
 
-        renderCalendar();
     }
+
 }
 
 
@@ -1711,13 +1709,11 @@ function editNestedItemText(
 
     if (!nestedItem) return;
 
-
     const newText =
         prompt(
             '하위 세부항목 수정:',
             nestedItem.text
         );
-
 
     if (
         newText !== null &&
@@ -1731,14 +1727,17 @@ function editNestedItemText(
 
         renderSubtasksUI(todoId);
 
-        renderCalendar();
     }
+
 }
 
 
-/* =====================================================
-   세부목록 렌더링
-===================================================== */
+/* =========================================================
+   세부목록 UI
+   중요:
+   details의 open 상태를 기억해서
+   체크해도 자동으로 접히지 않게 함
+========================================================= */
 
 function renderSubtasksUI(todoId) {
 
@@ -1752,434 +1751,316 @@ function renderSubtasksUI(todoId) {
             `sublist-${todoId}`
         );
 
-    if (
-        !todo ||
-        !subListEl
-    ) return;
+    if (!todo || !subListEl)
+        return;
 
 
-    subListEl.innerHTML = '';
+    /* 현재 열려 있던 목록 기억 */
+    const openStates = {};
+
+    subListEl
+        .querySelectorAll(
+            '.nested-details'
+        )
+        .forEach(details => {
+
+            const key =
+                details.dataset.subtaskId;
+
+            openStates[key] =
+                details.open;
+
+        });
 
 
-    todo.subtasks.forEach(sub => {
-
-        /* -------------------------
-           중첩 목록
-        ------------------------- */
-
-        if (sub.type === 'list') {
-
-            const subItems =
-                sub.items || [];
-
-            const total =
-                subItems.length;
-
-            const completed =
-                subItems.filter(
-                    i => i.completed
-                ).length;
-
-            const subPercent =
-                total === 0
-                    ? 0
-                    : Math.round(
-                        (completed / total) *
-                        100
-                    );
+    subListEl.innerHTML =
+        todo.subtasks.map(sub => {
 
 
-            const details =
-                document.createElement(
-                    'details'
-                );
+            /* =====================
+               중첩 목록
+            ===================== */
 
-            details.className =
-                'nested-details';
+            if (sub.type === 'list') {
 
+                const items =
+                    sub.items || [];
 
-            /*
-             * 중요:
-             * 기존 open 상태를 유지한다.
-             * 체크박스를 눌렀다고 details가
-             * 자동으로 닫히지 않는다.
-             */
+                const total =
+                    items.length;
 
-            details.open =
-                sub._open !== false;
+                const completed =
+                    items.filter(
+                        i => i.completed
+                    ).length;
 
-
-            details.addEventListener(
-                'toggle',
-                () => {
-
-                    sub._open =
-                        details.open;
-
-                    saveData();
-                }
-            );
+                const percent =
+                    total === 0
+                        ? 0
+                        : Math.round(
+                            (completed / total) * 100
+                        );
 
 
-            const summary =
-                document.createElement(
-                    'summary'
-                );
-
-            summary.className =
-                'nested-summary';
+                const oldOpen =
+                    openStates[sub.id]
+                        ? 'open'
+                        : '';
 
 
-            summary.innerHTML = `
-                <span class="nested-summary-title">
-                    📂 ${escapeHTML(sub.text)}
-                </span>
+                const nestedHTML =
+                    items.map(n => `
 
-                <div style="
-                    display:flex;
-                    align-items:center;
-                    gap:6px;
-                "
-                onclick="event.stopPropagation();">
+                        <div class="subtask-item
+                            ${n.completed ? 'completed' : ''}">
 
-                    <span style="
-                        font-size:0.85rem;
-                        color:#0284c7;
-                    ">
-                        진행도:
-                        <strong>
-                            ${subPercent}%
-                        </strong>
-                    </span>
+                            <div style="
+                                display:flex;
+                                align-items:center;
+                                gap:8px;
+                            ">
 
-                    <button
-                        class="btn-action"
-                        onclick="
-                            editSubtaskText(
-                                ${todo.id},
-                                ${sub.id}
-                            )
-                        ">
-                        수정
-                    </button>
-                </div>
-            `;
+                                <input
+                                    type="checkbox"
+                                    ${n.completed ? 'checked' : ''}
+                                    onchange="
+                                        toggleNestedItem(
+                                            ${todo.id},
+                                            ${sub.id},
+                                            ${n.id}
+                                        )
+                                    "
+                                >
+
+                                <span>
+                                    ${n.text}
+                                </span>
+
+                            </div>
+
+                            <div>
+
+                                <button
+                                    class="btn-action"
+                                    onclick="
+                                        editNestedItemText(
+                                            ${todo.id},
+                                            ${sub.id},
+                                            ${n.id}
+                                        )
+                                    "
+                                >
+                                    수정
+                                </button>
+
+                                <button
+                                    class="btn-delete"
+                                    onclick="
+                                        openDeleteModal(
+                                            'nested',
+                                            ${todo.id},
+                                            ${sub.id},
+                                            ${n.id}
+                                        )
+                                    "
+                                >
+                                    ✕
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    `).join('');
 
 
-            details.appendChild(summary);
+                return `
+
+                    <details
+                        class="nested-details"
+                        data-subtask-id="${sub.id}"
+                        ${oldOpen}
+                    >
+
+                        <summary class="nested-summary">
+
+                            <span class="nested-summary-title">
+                                📂 ${sub.text}
+                            </span>
+
+                            <div
+                                style="
+                                    display:flex;
+                                    align-items:center;
+                                    gap:5px;
+                                "
+                                onclick="
+                                    event.stopPropagation();
+                                "
+                            >
+
+                                <span
+                                    style="
+                                        font-size:.8rem;
+                                        color:#0284c7;
+                                    "
+                                >
+                                    ${percent}%
+                                </span>
+
+                                <button
+                                    class="btn-action"
+                                    onclick="
+                                        editSubtaskText(
+                                            ${todo.id},
+                                            ${sub.id}
+                                        )
+                                    "
+                                >
+                                    수정
+                                </button>
+
+                            </div>
+
+                        </summary>
+
+                        <div class="nested-content">
+
+                            ${nestedHTML}
+
+                            <div
+                                class="subtask-input-group"
+                                style="margin-top:8px;"
+                            >
+
+                                <input
+                                    type="text"
+                                    id="
+                                        nestedInput-${todo.id}-${sub.id}
+                                    "
+                                    placeholder="하위 세부항목 입력..."
+                                >
+
+                                <button
+                                    onclick="
+                                        addNestedItem(
+                                            ${todo.id},
+                                            ${sub.id}
+                                        )
+                                    "
+                                >
+                                    추가
+                                </button>
+
+                                <button
+                                    class="btn-delete"
+                                    style="margin-left:auto;"
+                                    onclick="
+                                        openDeleteModal(
+                                            'subtask',
+                                            ${todo.id},
+                                            ${sub.id}
+                                        )
+                                    "
+                                >
+                                    세부목록 삭제
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </details>
+
+                `;
+
+            }
 
 
-            const content =
-                document.createElement(
-                    'div'
-                );
+            /* =====================
+               일반 세부 항목
+            ===================== */
 
-            content.className =
-                'nested-content';
+            return `
 
+                <div class="subtask-item
+                    ${sub.completed ? 'completed' : ''}">
 
-            subItems.forEach(n => {
-
-                const item =
-                    document.createElement(
-                        'div'
-                    );
-
-                item.className =
-                    `subtask-item ${
-                        n.completed
-                            ? 'completed'
-                            : ''
-                    }`;
-
-
-                item.innerHTML = `
                     <div style="
                         display:flex;
                         align-items:center;
                         gap:8px;
-                        min-width:0;
+                        flex-wrap:wrap;
                     ">
 
                         <input
                             type="checkbox"
-                            ${n.completed ? 'checked' : ''}
+                            ${sub.completed ? 'checked' : ''}
+                            onchange="
+                                toggleSubtask(
+                                    ${todo.id},
+                                    ${sub.id}
+                                )
+                            "
                         >
 
                         <span>
-                            ${escapeHTML(n.text)}
+                            ${sub.text}
                         </span>
+
+                        ${
+                            sub.dueDate
+                            ? `
+                                <span class="due-date">
+                                    📅 ${sub.dueDate}
+                                </span>
+                            `
+                            : ''
+                        }
 
                     </div>
 
                     <div>
 
                         <button
-                            class="btn-action">
+                            class="btn-action"
+                            onclick="
+                                editSubtaskText(
+                                    ${todo.id},
+                                    ${sub.id}
+                                )
+                            "
+                        >
                             수정
                         </button>
 
                         <button
-                            class="btn-delete">
+                            class="btn-delete"
+                            onclick="
+                                openDeleteModal(
+                                    'subtask',
+                                    ${todo.id},
+                                    ${sub.id}
+                                )
+                            "
+                        >
                             ✕
                         </button>
 
                     </div>
-                `;
-
-
-                const checkbox =
-                    item.querySelector(
-                        'input'
-                    );
-
-                checkbox.onchange = () => {
-
-                    n.completed =
-                        checkbox.checked;
-
-                    saveData();
-
-                    /*
-                     * 여기서 전체 render()를
-                     * 호출하지 않는다.
-                     *
-                     * 그래서 펼쳐진 details가
-                     * 그대로 유지된다.
-                     */
-
-                    item.classList.toggle(
-                        'completed',
-                        n.completed
-                    );
-
-                    updateProgressUI(
-                        todoId
-                    );
-
-                    renderSubtasksUI(
-                        todoId
-                    );
-                };
-
-
-                const buttons =
-                    item.querySelectorAll(
-                        'button'
-                    );
-
-
-                buttons[0].onclick =
-                    () => {
-
-                        editNestedItemText(
-                            todo.id,
-                            sub.id,
-                            n.id
-                        );
-                    };
-
-
-                buttons[1].onclick =
-                    () => {
-
-                        openDeleteModal(
-                            'nested',
-                            todo.id,
-                            sub.id,
-                            n.id
-                        );
-                    };
-
-
-                content.appendChild(item);
-            });
-
-
-            content.innerHTML += `
-                <div class="subtask-input-group">
-
-                    <input
-                        type="text"
-                        id="nestedInput-${todo.id}-${sub.id}"
-                        placeholder="하위 세부항목 입력..."
-                    >
-
-                    <button
-                        onclick="
-                            addNestedItem(
-                                ${todo.id},
-                                ${sub.id}
-                            )
-                        ">
-                        추가
-                    </button>
-
-                    <button
-                        class="btn-delete"
-                        style="margin-left:auto;"
-                        onclick="
-                            openDeleteModal(
-                                'subtask',
-                                ${todo.id},
-                                ${sub.id}
-                            )
-                        ">
-                        세부목록 삭제
-                    </button>
 
                 </div>
+
             `;
 
+        }).join('');
 
-            details.appendChild(content);
-
-            subListEl.appendChild(details);
-
-        }
-
-
-        /* -------------------------
-           일반 세부항목
-        ------------------------- */
-
-        else {
-
-            const item =
-                document.createElement(
-                    'div'
-                );
-
-            item.className =
-                `subtask-item ${
-                    sub.completed
-                        ? 'completed'
-                        : ''
-                }`;
-
-
-            item.innerHTML = `
-                <div style="
-                    display:flex;
-                    align-items:center;
-                    gap:8px;
-                    flex-wrap:wrap;
-                ">
-
-                    <input
-                        type="checkbox"
-                        ${sub.completed ? 'checked' : ''}
-                    >
-
-                    <span>
-                        ${escapeHTML(sub.text)}
-                    </span>
-
-                    ${
-                        sub.dueDate
-                            ? `
-                                <span class="due-date">
-                                    📅 ${sub.dueDate}
-                                </span>
-                              `
-                            : ''
-                    }
-
-                </div>
-
-                <div>
-
-                    <button
-                        class="btn-action">
-                        수정
-                    </button>
-
-                    <button
-                        class="btn-delete">
-                        ✕
-                    </button>
-
-                </div>
-            `;
-
-
-            const checkbox =
-                item.querySelector(
-                    'input'
-                );
-
-
-            checkbox.onchange = () => {
-
-                sub.completed =
-                    checkbox.checked;
-
-                saveData();
-
-                renderSubtasksUI(
-                    todoId
-                );
-
-                updateProgressUI(
-                    todoId
-                );
-
-                renderCalendar();
-            };
-
-
-            const buttons =
-                item.querySelectorAll(
-                    'button'
-                );
-
-
-            buttons[0].onclick =
-                () => {
-
-                    editSubtaskText(
-                        todoId,
-                        sub.id
-                    );
-                };
-
-
-            buttons[1].onclick =
-                () => {
-
-                    openDeleteModal(
-                        'subtask',
-                        todoId,
-                        sub.id
-                    );
-                };
-
-
-            subListEl.appendChild(item);
-        }
-
-    });
 }
 
 
-/* =====================================================
-   HTML 문자 안전처리
-===================================================== */
-
-function escapeHTML(str) {
-
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-
-/* =====================================================
-   세부항목 추가
-===================================================== */
+/* =========================================================
+   세부 항목 추가
+========================================================= */
 
 function addSubtask(todoId) {
 
@@ -2198,25 +2079,20 @@ function addSubtask(todoId) {
             `subDate-${todoId}`
         );
 
-
     const subType =
         typeSelect
             ? typeSelect.value
             : 'simple';
 
-
     const text =
         input.value.trim();
 
-
     if (!text) return;
-
 
     const todo =
         todos.find(
             t => t.id === todoId
         );
-
 
     if (!todo) return;
 
@@ -2231,9 +2107,7 @@ function addSubtask(todoId) {
 
             text,
 
-            items: [],
-
-            _open: true
+            items: []
 
         });
 
@@ -2258,29 +2132,22 @@ function addSubtask(todoId) {
                     : null
 
         });
-    }
 
+    }
 
     saveData();
 
     input.value = '';
 
-    if (dateInput) {
+    if (dateInput)
         dateInput.value = '';
-    }
-
-
-    renderSubtasksUI(todoId);
 
     updateProgressUI(todoId);
 
-    renderCalendar();
+    renderSubtasksUI(todoId);
+
 }
 
-
-/* =====================================================
-   중첩 항목 추가
-===================================================== */
 
 function addNestedItem(
     todoId,
@@ -2292,14 +2159,10 @@ function addNestedItem(
             `nestedInput-${todoId}-${subtaskId}`
         );
 
-    if (!input) return;
-
-
     const text =
         input.value.trim();
 
     if (!text) return;
-
 
     const todo =
         todos.find(
@@ -2308,7 +2171,6 @@ function addNestedItem(
 
     if (!todo) return;
 
-
     const subtask =
         todo.subtasks.find(
             s => s.id === subtaskId
@@ -2316,18 +2178,8 @@ function addNestedItem(
 
     if (!subtask) return;
 
-
-    if (!subtask.items) {
+    if (!subtask.items)
         subtask.items = [];
-    }
-
-
-    /*
-     * 항목을 추가하면
-     * 세부목록은 자동으로 펼쳐진 상태 유지
-     */
-
-    subtask._open = true;
 
 
     subtask.items.push({
@@ -2345,18 +2197,16 @@ function addNestedItem(
 
     input.value = '';
 
+    updateProgressUI(todoId);
 
     renderSubtasksUI(todoId);
 
-    updateProgressUI(todoId);
-
-    renderCalendar();
 }
 
 
-/* =====================================================
-   진행률 체크
-===================================================== */
+/* =========================================================
+   체크
+========================================================= */
 
 function toggleSubtask(
     todoId,
@@ -2370,7 +2220,6 @@ function toggleSubtask(
 
     if (!todo) return;
 
-
     const subtask =
         todo.subtasks.find(
             s => s.id === subtaskId
@@ -2378,18 +2227,15 @@ function toggleSubtask(
 
     if (!subtask) return;
 
-
     subtask.completed =
         !subtask.completed;
 
-
     saveData();
-
-    renderSubtasksUI(todoId);
 
     updateProgressUI(todoId);
 
-    renderCalendar();
+    renderSubtasksUI(todoId);
+
 }
 
 
@@ -2406,45 +2252,43 @@ function toggleNestedItem(
 
     if (!todo) return;
 
-
     const subtask =
         todo.subtasks.find(
             s => s.id === subtaskId
         );
 
-    if (!subtask) return;
+    if (!subtask || !subtask.items)
+        return;
 
-
-    const nestedItem =
+    const item =
         subtask.items.find(
             i => i.id === nestedId
         );
 
-    if (!nestedItem) return;
+    if (!item) return;
 
-
-    nestedItem.completed =
-        !nestedItem.completed;
-
+    item.completed =
+        !item.completed;
 
     saveData();
 
+    updateProgressUI(todoId);
+
     /*
-     * 여기에서도 _open 값이
-     * 유지되므로 접히지 않는다.
-     */
+       여기서 render()를 하지 않고
+       renderSubtasksUI()만 실행.
+       그래서 전체 카드가 다시 만들어지면서
+       details가 닫히는 문제를 막음.
+    */
 
     renderSubtasksUI(todoId);
 
-    updateProgressUI(todoId);
-
-    renderCalendar();
 }
 
 
-/* =====================================================
-   세부목록 입력 타입
-===================================================== */
+/* =========================================================
+   세부목록 종류 변경
+========================================================= */
 
 function handleSubTypeChange(todoId) {
 
@@ -2458,23 +2302,136 @@ function handleSubTypeChange(todoId) {
             `subDate-${todoId}`
         );
 
+    if (!typeSelect || !dateInput)
+        return;
 
-    if (
-        typeSelect &&
-        dateInput
-    ) {
+    dateInput.style.display =
+        typeSelect.value === 'list'
+            ? 'none'
+            : 'inline-block';
 
-        dateInput.style.display =
-            typeSelect.value === 'list'
-                ? 'none'
-                : 'inline-block';
-    }
 }
 
 
-/* =====================================================
+/* =========================================================
+   스와이프 완료
+========================================================= */
+
+function initSwipe(
+    cardEl,
+    id
+) {
+
+    let startX = 0;
+
+    let currentX = 0;
+
+    let isSwiping = false;
+
+
+    const onStart = e => {
+
+        startX =
+            e.touches
+                ? e.touches[0].clientX
+                : e.clientX;
+
+        isSwiping = true;
+
+        cardEl.style.transition =
+            'none';
+
+    };
+
+
+    const onMove = e => {
+
+        if (!isSwiping) return;
+
+        const x =
+            e.touches
+                ? e.touches[0].clientX
+                : e.clientX;
+
+        currentX =
+            x - startX;
+
+        if (currentX > 0) {
+
+            cardEl.style.transform =
+                `translateX(${currentX}px)`;
+
+        }
+
+    };
+
+
+    const onEnd = () => {
+
+        if (!isSwiping) return;
+
+        isSwiping = false;
+
+        cardEl.style.transition =
+            'transform .25s ease';
+
+
+        if (
+            currentX >
+            cardEl.offsetWidth * .4
+        ) {
+
+            cardEl.style.transform =
+                `translateX(
+                    ${cardEl.offsetWidth + 50}px
+                )`;
+
+            setTimeout(() => {
+
+                todos =
+                    todos.filter(
+                        t => t.id !== id
+                    );
+
+                saveData();
+
+                render();
+
+            }, 200);
+
+        } else {
+
+            cardEl.style.transform =
+                'translateX(0)';
+
+        }
+
+        currentX = 0;
+
+    };
+
+
+    cardEl.addEventListener(
+        'touchstart',
+        onStart
+    );
+
+    cardEl.addEventListener(
+        'touchmove',
+        onMove
+    );
+
+    cardEl.addEventListener(
+        'touchend',
+        onEnd
+    );
+
+}
+
+
+/* =========================================================
    카드 생성
-===================================================== */
+========================================================= */
 
 function createCardElement(todo) {
 
@@ -2482,13 +2439,14 @@ function createCardElement(todo) {
         document.createElement('div');
 
 
-    /* 일반 방식 */
+    /* =====================
+       일반 방식
+    ===================== */
 
     if (todo.type === 'simple') {
 
         wrapper.className =
             'todo-card-wrapper';
-
 
         wrapper.innerHTML = `
 
@@ -2498,24 +2456,25 @@ function createCardElement(todo) {
 
             <div
                 class="todo-card"
-                id="card-${todo.id}">
+                id="card-${todo.id}"
+            >
 
                 <div class="todo-header">
 
                     <div class="todo-title">
 
                         <span>
-                            👉 ${escapeHTML(todo.title)}
+                            👉 ${todo.title}
                         </span>
 
                         ${
                             todo.dueDate
-                                ? `
-                                    <span class="due-date">
-                                        📅 ${todo.dueDate}
-                                    </span>
-                                  `
-                                : ''
+                            ? `
+                                <span class="due-date">
+                                    📅 ${todo.dueDate}
+                                </span>
+                            `
+                            : ''
                         }
 
                     </div>
@@ -2525,10 +2484,9 @@ function createCardElement(todo) {
                         <button
                             class="btn-action"
                             onclick="
-                                openModal(
-                                    ${todo.id}
-                                )
-                            ">
+                                openModal(${todo.id})
+                            "
+                        >
                             수정
                         </button>
 
@@ -2539,7 +2497,8 @@ function createCardElement(todo) {
                                     'todo',
                                     ${todo.id}
                                 )
-                            ">
+                            "
+                        >
                             삭제
                         </button>
 
@@ -2547,15 +2506,18 @@ function createCardElement(todo) {
 
                 </div>
 
-                <div style="
-                    font-size:0.75rem;
-                    color:#94a3b8;
-                    margin-top:6px;
-                ">
+                <div
+                    style="
+                        font-size:.75rem;
+                        color:#94a3b8;
+                        margin-top:6px;
+                    "
+                >
                     💡 오른쪽으로 밀어서 바로 완료
                 </div>
 
             </div>
+
         `;
 
 
@@ -2566,26 +2528,26 @@ function createCardElement(todo) {
                     `card-${todo.id}`
                 );
 
-            if (card) {
-
+            if (card)
                 initSwipe(
                     card,
                     todo.id
                 );
-            }
 
         }, 0);
 
 
     }
 
-    /* 프로젝트 방식 */
+
+    /* =====================
+       프로젝트 방식
+    ===================== */
 
     else {
 
         wrapper.className =
             'todo-card-standalone';
-
 
         const progress =
             calculateTodoProgress(todo);
@@ -2598,17 +2560,17 @@ function createCardElement(todo) {
                 <div class="todo-title">
 
                     <span>
-                        📂 ${escapeHTML(todo.title)}
+                        📂 ${todo.title}
                     </span>
 
                     ${
                         todo.dueDate
-                            ? `
-                                <span class="due-date">
-                                    📅 ${todo.dueDate}
-                                </span>
-                              `
-                            : ''
+                        ? `
+                            <span class="due-date">
+                                📅 ${todo.dueDate}
+                            </span>
+                        `
+                        : ''
                     }
 
                 </div>
@@ -2618,10 +2580,9 @@ function createCardElement(todo) {
                     <button
                         class="btn-action"
                         onclick="
-                            openModal(
-                                ${todo.id}
-                            )
-                        ">
+                            openModal(${todo.id})
+                        "
+                    >
                         수정
                     </button>
 
@@ -2632,7 +2593,8 @@ function createCardElement(todo) {
                                 'todo',
                                 ${todo.id}
                             )
-                        ">
+                        "
+                    >
                         삭제
                     </button>
 
@@ -2648,17 +2610,14 @@ function createCardElement(todo) {
                     <div
                         class="progress-bar-fill"
                         id="bar-${todo.id}"
-                        style="
-                            width:${progress}%;
-                        ">
-                    </div>
+                        style="width:${progress}%"
+                    ></div>
 
                 </div>
 
                 <div class="progress-text">
 
                     진행도:
-
                     <strong class="percent-val">
                         <span id="percent-${todo.id}">
                             ${progress}
@@ -2673,8 +2632,8 @@ function createCardElement(todo) {
             <div class="subtasks-list">
 
                 <div
-                    id="sublist-${todo.id}">
-                </div>
+                    id="sublist-${todo.id}"
+                ></div>
 
 
                 <div class="subtask-input-group">
@@ -2685,7 +2644,8 @@ function createCardElement(todo) {
                             handleSubTypeChange(
                                 ${todo.id}
                             )
-                        ">
+                        "
+                    >
 
                         <option value="simple">
                             일반 항목
@@ -2716,162 +2676,791 @@ function createCardElement(todo) {
                             addSubtask(
                                 ${todo.id}
                             )
-                        ">
+                        "
+                    >
                         추가
                     </button>
 
                 </div>
 
             </div>
+
         `;
 
 
-        setTimeout(() => {
+        setTimeout(
+            () => renderSubtasksUI(todo.id),
+            0
+        );
 
-            renderSubtasksUI(
-                todo.id
-            );
-
-        }, 0);
     }
 
 
     return wrapper;
+
 }
 
 
-/* =====================================================
-   스와이프
-===================================================== */
+/* =========================================================
+   달력에 표시할 일정 만들기
+========================================================= */
 
-function initSwipe(cardEl, id) {
+function getCalendarEvents() {
 
-    let startX = 0;
-    let currentX = 0;
-    let isSwiping = false;
+    const events = [];
 
-
-    const onStart = e => {
-
-        startX =
-            e.touches
-                ? e.touches[0].clientX
-                : e.clientX;
-
-        isSwiping = true;
-
-        cardEl.style.transition =
-            'none';
-    };
+    const today =
+        getTodayString();
 
 
-    const onMove = e => {
+    todos.forEach(todo => {
 
-        if (!isSwiping) return;
+        /*
+         오늘 할 일은 마감일이 없지만
+         달력에서는 오늘 날짜에 표시
+        */
 
+        if (todo.category === 'today') {
 
-        const x =
-            e.touches
-                ? e.touches[0].clientX
-                : e.clientX;
+            events.push({
 
+                id: todo.id,
 
-        currentX =
-            x - startX;
+                title: todo.title,
 
+                date: today,
 
-        if (currentX > 0) {
+                type: 'today',
 
-            cardEl.style.transform =
-                `translateX(${currentX}px)`;
+                completed: false,
+
+                todoId: todo.id
+
+            });
+
         }
-    };
 
 
-    const onEnd = () => {
+        /* 일반 마감일 */
 
-        if (!isSwiping) return;
+        else if (todo.dueDate) {
 
-        isSwiping = false;
+            events.push({
 
-        cardEl.style.transition =
-            'transform 0.25s ease';
+                id: todo.id,
+
+                title: todo.title,
+
+                date: todo.dueDate,
+
+                type: 'todo',
+
+                completed: false,
+
+                todoId: todo.id
+
+            });
+
+        }
+
+
+        /* 프로젝트의 세부 항목 마감일 */
+
+        if (
+            todo.type === 'project' &&
+            todo.subtasks
+        ) {
+
+            todo.subtasks.forEach(sub => {
+
+                if (
+                    sub.type !== 'list' &&
+                    sub.dueDate
+                ) {
+
+                    events.push({
+
+                        id:
+                            `sub-${todo.id}-${sub.id}`,
+
+                        title:
+                            sub.text,
+
+                        date:
+                            sub.dueDate,
+
+                        type: 'subtask',
+
+                        completed:
+                            !!sub.completed,
+
+                        todoId:
+                            todo.id,
+
+                        subtaskId:
+                            sub.id
+
+                    });
+
+                }
+
+            });
+
+        }
+
+    });
+
+
+    return events;
+
+}
+
+
+/* =========================================================
+   달력
+========================================================= */
+
+let calendarDate =
+    new Date();
+
+let selectedCalendarDate =
+    getTodayString();
+
+
+function openCalendar() {
+
+    document.getElementById(
+        'calendarModal'
+    ).style.display = 'flex';
+
+    calendarDate =
+        new Date();
+
+    selectedCalendarDate =
+        getTodayString();
+
+    renderCalendar();
+
+}
+
+
+function closeCalendar() {
+
+    document.getElementById(
+        'calendarModal'
+    ).style.display = 'none';
+
+}
+
+
+function changeCalendarMonth(delta) {
+
+    calendarDate.setMonth(
+        calendarDate.getMonth() + delta
+    );
+
+    renderCalendar();
+
+}
+
+
+function renderCalendar() {
+
+    const grid =
+        document.getElementById(
+            'calendarGrid'
+        );
+
+    const title =
+        document.getElementById(
+            'calendarTitle'
+        );
+
+
+    const year =
+        calendarDate.getFullYear();
+
+    const month =
+        calendarDate.getMonth();
+
+
+    title.textContent =
+        `${year}년 ${month + 1}월`;
+
+
+    grid.innerHTML = '';
+
+
+    const firstDay =
+        new Date(
+            year,
+            month,
+            1
+        ).getDay();
+
+
+    const daysInMonth =
+        new Date(
+            year,
+            month + 1,
+            0
+        ).getDate();
+
+
+    const events =
+        getCalendarEvents();
+
+
+    for (
+        let i = 0;
+        i < firstDay;
+        i++
+    ) {
+
+        const empty =
+            document.createElement('div');
+
+        grid.appendChild(empty);
+
+    }
+
+
+    const today =
+        getTodayString();
+
+
+    for (
+        let day = 1;
+        day <= daysInMonth;
+        day++
+    ) {
+
+        const dateKey =
+            `${year}-${String(
+                month + 1
+            ).padStart(2,'0')}-${String(
+                day
+            ).padStart(2,'0')}`;
+
+
+        const cell =
+            document.createElement('div');
+
+        cell.className =
+            'calendar-day';
 
 
         if (
-            currentX >
-            cardEl.offsetWidth * 0.4
+            dateKey ===
+            selectedCalendarDate
         ) {
 
-            cardEl.style.transform =
-                `translateX(${
-                    cardEl.offsetWidth + 50
-                }px)`;
+            cell.classList.add(
+                'selected'
+            );
 
-
-            setTimeout(() => {
-
-                todos =
-                    todos.filter(
-                        t => t.id !== id
-                    );
-
-                saveData();
-
-                render();
-
-                renderCalendar();
-
-            }, 200);
-
-
-        } else {
-
-            cardEl.style.transform =
-                'translateX(0px)';
         }
 
 
-        currentX = 0;
-    };
+        if (dateKey === today) {
+
+            cell.classList.add(
+                'today'
+            );
+
+        }
 
 
-    cardEl.addEventListener(
-        'touchstart',
-        onStart
+        const number =
+            document.createElement('div');
+
+        number.className =
+            'calendar-number';
+
+        number.textContent =
+            day;
+
+        cell.appendChild(number);
+
+
+        const dayEvents =
+            events.filter(
+                e => e.date === dateKey
+            );
+
+
+        dayEvents
+            .slice(0, 3)
+            .forEach(event => {
+
+                const badge =
+                    document.createElement('div');
+
+                badge.className =
+                    'calendar-event';
+
+
+                if (
+                    event.completed
+                ) {
+
+                    badge.classList.add(
+                        'completed'
+                    );
+
+                }
+
+
+                if (
+                    event.type === 'today'
+                ) {
+
+                    badge.classList.add(
+                        'today-event'
+                    );
+
+                }
+
+
+                badge.textContent =
+                    event.type === 'today'
+                        ? `☀️ ${event.title}`
+                        : event.title;
+
+
+                cell.appendChild(
+                    badge
+                );
+
+            });
+
+
+        if (
+            dayEvents.length > 3
+        ) {
+
+            const more =
+                document.createElement('div');
+
+            more.style.fontSize =
+                '.6rem';
+
+            more.style.color =
+                '#64748b';
+
+            more.textContent =
+                `+ ${dayEvents.length - 3}개`;
+
+            cell.appendChild(
+                more
+            );
+
+        }
+
+
+        cell.onclick = () => {
+
+            selectedCalendarDate =
+                dateKey;
+
+            renderCalendar();
+
+        };
+
+
+        grid.appendChild(cell);
+
+    }
+
+
+    showCalendarDetails(
+        selectedCalendarDate
     );
 
-    cardEl.addEventListener(
-        'touchmove',
-        onMove
-    );
-
-    cardEl.addEventListener(
-        'touchend',
-        onEnd
-    );
-
-
-    cardEl.addEventListener(
-        'mousedown',
-        onStart
-    );
-
-    window.addEventListener(
-        'mousemove',
-        onMove
-    );
-
-    window.addEventListener(
-        'mouseup',
-        onEnd
-    );
 }
 
 
-/* =====================================================
+/* =========================================================
+   달력 날짜 상세
+========================================================= */
+
+function showCalendarDetails(
+    dateStr
+) {
+
+    const title =
+        document.getElementById(
+            'calendarDetailTitle'
+        );
+
+    const list =
+        document.getElementById(
+            'calendarDetailList'
+        );
+
+
+    title.textContent =
+        `📅 ${dateStr} 일정`;
+
+
+    list.innerHTML = '';
+
+
+    const events =
+        getCalendarEvents()
+            .filter(
+                e => e.date === dateStr
+            );
+
+
+    if (events.length === 0) {
+
+        list.innerHTML =
+            `
+            <div class="calendar-detail-empty">
+                이 날짜에는 마감 일정이 없습니다.
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    events.forEach(event => {
+
+        const item =
+            document.createElement('div');
+
+        item.className =
+            'calendar-detail-item';
+
+
+        const completed =
+            event.completed;
+
+
+        item.innerHTML = `
+
+            <div class="calendar-detail-left">
+
+                <input
+                    type="checkbox"
+                    ${completed ? 'checked' : ''}
+                    onchange="
+                        toggleCalendarEvent(
+                            '${event.id}'
+                        )
+                    "
+                >
+
+                <span
+                    style="
+                        ${
+                            completed
+                            ? 'text-decoration:line-through;color:#94a3b8;'
+                            : ''
+                        }
+                    "
+                >
+                    ${
+                        event.type === 'today'
+                        ? '☀️ '
+                        : ''
+                    }
+                    ${event.title}
+                </span>
+
+            </div>
+
+
+            <div class="calendar-detail-actions">
+
+                <button
+                    class="btn-action"
+                    onclick="
+                        editCalendarEvent(
+                            '${event.id}'
+                        )
+                    "
+                >
+                    수정
+                </button>
+
+                <button
+                    class="btn-delete"
+                    onclick="
+                        deleteCalendarEvent(
+                            '${event.id}'
+                        )
+                    "
+                >
+                    삭제
+                </button>
+
+            </div>
+
+        `;
+
+
+        list.appendChild(item);
+
+    });
+
+}
+
+
+/* =========================================================
+   달력 일정 찾기
+========================================================= */
+
+function findCalendarEvent(
+    eventId
+) {
+
+    const events =
+        getCalendarEvents();
+
+    return events.find(
+        e => String(e.id) === String(eventId)
+    );
+
+}
+
+
+/* =========================================================
+   달력에서 완료
+========================================================= */
+
+function toggleCalendarEvent(
+    eventId
+) {
+
+    const event =
+        findCalendarEvent(eventId);
+
+    if (!event) return;
+
+
+    if (
+        event.type === 'todo' ||
+        event.type === 'today'
+    ) {
+
+        /*
+         일반/오늘 할 일은
+         체크박스 대신 스와이프 완료 방식이므로
+         여기서는 간단히 삭제 = 완료 처리하지 않고
+         안내 후 원래 방식 유지
+        */
+
+        alert(
+            '일반 할 일은 메인 화면에서 오른쪽으로 밀어 완료할 수 있어요.'
+        );
+
+        renderCalendar();
+
+        return;
+
+    }
+
+
+    if (event.type === 'subtask') {
+
+        const todo =
+            todos.find(
+                t => t.id === event.todoId
+            );
+
+        if (!todo) return;
+
+
+        const sub =
+            todo.subtasks.find(
+                s => s.id === event.subtaskId
+            );
+
+        if (!sub) return;
+
+
+        sub.completed =
+            !sub.completed;
+
+
+        saveData();
+
+        render();
+
+        renderCalendar();
+
+    }
+
+}
+
+
+/* =========================================================
+   달력에서 수정
+========================================================= */
+
+function editCalendarEvent(
+    eventId
+) {
+
+    const event =
+        findCalendarEvent(eventId);
+
+    if (!event) return;
+
+
+    /*
+       메인 할 일 수정
+    */
+
+    if (
+        event.type === 'todo' ||
+        event.type === 'today'
+    ) {
+
+        openModal(
+            event.todoId
+        );
+
+        return;
+
+    }
+
+
+    /*
+       세부 항목 수정
+    */
+
+    if (event.type === 'subtask') {
+
+        const todo =
+            todos.find(
+                t => t.id === event.todoId
+            );
+
+        if (!todo) return;
+
+
+        const sub =
+            todo.subtasks.find(
+                s => s.id === event.subtaskId
+            );
+
+        if (!sub) return;
+
+
+        const newText =
+            prompt(
+                '세부 항목 수정:',
+                sub.text
+            );
+
+        if (
+            newText === null ||
+            !newText.trim()
+        ) return;
+
+
+        const newDate =
+            prompt(
+                '마감기한 수정 (YYYY-MM-DD):',
+                sub.dueDate || ''
+            );
+
+        if (newDate === null)
+            return;
+
+
+        sub.text =
+            newText.trim();
+
+        sub.dueDate =
+            newDate.trim() || null;
+
+
+        saveData();
+
+        render();
+
+        renderCalendar();
+
+    }
+
+}
+
+
+/* =========================================================
+   달력에서 삭제
+========================================================= */
+
+function deleteCalendarEvent(
+    eventId
+) {
+
+    const event =
+        findCalendarEvent(eventId);
+
+    if (!event) return;
+
+
+    if (
+        !confirm(
+            `"${event.title}"을(를) 삭제할까요?`
+        )
+    ) return;
+
+
+    if (
+        event.type === 'todo' ||
+        event.type === 'today'
+    ) {
+
+        todos =
+            todos.filter(
+                t => t.id !== event.todoId
+            );
+
+    }
+
+
+    else if (
+        event.type === 'subtask'
+    ) {
+
+        const todo =
+            todos.find(
+                t => t.id === event.todoId
+            );
+
+        if (todo) {
+
+            todo.subtasks =
+                todo.subtasks.filter(
+                    s =>
+                        s.id !==
+                        event.subtaskId
+                );
+
+        }
+
+    }
+
+
+    saveData();
+
+    render();
+
+    renderCalendar();
+
+}
+
+
+/* =========================================================
    전체 렌더링
-===================================================== */
+========================================================= */
 
 function render() {
 
@@ -2906,7 +3495,7 @@ function render() {
             'dueAlertSection'
         );
 
-    const todaySection =
+    const todayTaskSection =
         document.getElementById(
             'todayTaskSection'
         );
@@ -2921,7 +3510,7 @@ function render() {
             'homeworkSection'
         );
 
-    const mainTitle =
+    const mainSectionTitle =
         document.getElementById(
             'mainSectionTitle'
         );
@@ -2932,21 +3521,29 @@ function render() {
 
 
     todoList.innerHTML = '';
+
     todayTaskList.innerHTML = '';
+
     commissionList.innerHTML = '';
+
     homeworkList.innerHTML = '';
+
     dueAlertList.innerHTML = '';
 
 
     let alertCount = 0;
-    let todayCount = 0;
+
+    let todayTaskCount = 0;
+
     let commissionCount = 0;
+
     let homeworkCount = 0;
 
 
     todos.forEach(todo => {
 
-        /* 메인 마감일 */
+
+        /* 마감 알림 */
 
         if (
             todo.dueDate &&
@@ -2955,20 +3552,20 @@ function render() {
 
             alertCount++;
 
+
             const isPast =
                 todo.dueDate < todayStr;
 
 
             const item =
-                document.createElement(
-                    'div'
-                );
+                document.createElement('div');
+
+
+            item.style.fontSize =
+                '.9rem';
 
             item.style.marginBottom =
                 '6px';
-
-            item.style.fontSize =
-                '0.9rem';
 
             item.style.color =
                 isPast
@@ -2976,39 +3573,41 @@ function render() {
                     : '#9f1239';
 
 
-            item.innerHTML = `
-                📌
-                <strong>
-                    ${escapeHTML(todo.title)}
+            item.innerHTML =
+                `
+                📌 <strong>
+                    ${todo.title}
                 </strong>
 
-                <span style="
-                    font-size:0.8rem;
-                    opacity:0.85;
-                ">
+                <span
+                    style="
+                        font-size:.8rem;
+                        opacity:.85;
+                    "
+                >
                     (
                     ${
                         isPast
-                            ? '지남: '
-                            : ''
+                        ? '지남: '
+                        : ''
                     }
                     ${todo.dueDate}
                     )
                 </span>
-            `;
+                `;
 
 
             dueAlertList.appendChild(
                 item
             );
+
         }
 
 
-        /* 세부항목 마감일 */
+        /* 세부 항목 마감 */
 
         if (
-            todo.type === 'project' &&
-            todo.subtasks
+            todo.type === 'project'
         ) {
 
             todo.subtasks.forEach(
@@ -3036,7 +3635,7 @@ function render() {
 
 
                         item.style.fontSize =
-                            '0.9rem';
+                            '.9rem';
 
                         item.style.marginBottom =
                             '6px';
@@ -3047,36 +3646,41 @@ function render() {
                                 : '#9f1239';
 
 
-                        item.innerHTML = `
-                            📌
-                            <strong>
-                                ${escapeHTML(sub.text)}
+                        item.innerHTML =
+                            `
+                            📌 <strong>
+                                ${sub.text}
                             </strong>
 
-                            <span style="
-                                font-size:0.8rem;
-                                opacity:0.85;
-                            ">
+                            <span
+                                style="
+                                    font-size:.8rem;
+                                    opacity:.85;
+                                "
+                            >
                                 (
-                                ${escapeHTML(todo.title)}
+                                ${todo.title}
                                 -
                                 ${
                                     isPast
-                                        ? '지남: '
-                                        : ''
+                                    ? '지남: '
+                                    : ''
                                 }
                                 ${sub.dueDate}
                                 )
                             </span>
-                        `;
+                            `;
 
 
                         dueAlertList.appendChild(
                             item
                         );
+
                     }
+
                 }
             );
+
         }
 
 
@@ -3085,21 +3689,19 @@ function render() {
 
 
         if (
-            todo.category ===
-            'today'
+            todo.category === 'today'
         ) {
 
             todayTaskList.appendChild(
                 card
             );
 
-            todayCount++;
+            todayTaskCount++;
 
         }
 
         else if (
-            todo.category ===
-            'commission'
+            todo.category === 'commission'
         ) {
 
             commissionList.appendChild(
@@ -3111,8 +3713,7 @@ function render() {
         }
 
         else if (
-            todo.category ===
-            'homework'
+            todo.category === 'homework'
         ) {
 
             homeworkList.appendChild(
@@ -3128,6 +3729,7 @@ function render() {
             todoList.appendChild(
                 card
             );
+
         }
 
     });
@@ -3139,8 +3741,8 @@ function render() {
             : 'none';
 
 
-    todaySection.style.display =
-        todayCount > 0
+    todayTaskSection.style.display =
+        todayTaskCount > 0
             ? 'block'
             : 'none';
 
@@ -3157,709 +3759,23 @@ function render() {
             : 'none';
 
 
-    mainTitle.style.display =
+    mainSectionTitle.style.display =
         (
-            todayCount > 0 ||
-            commissionCount > 0 ||
-            homeworkCount > 0
+            todoList.children.length > 0
         )
             ? 'block'
             : 'none';
+
 }
 
 
-/* =====================================================
-   달력
-===================================================== */
-
-let calendarYear =
-    new Date().getFullYear();
-
-let calendarMonth =
-    new Date().getMonth();
-
-let selectedCalendarDate =
-    getTodayString();
-
-
-function openCalendarModal() {
-
-    document.getElementById(
-        'calendarModal'
-    ).style.display = 'flex';
-
-
-    calendarYear =
-        new Date().getFullYear();
-
-    calendarMonth =
-        new Date().getMonth();
-
-
-    renderCalendar();
-
-    showCalendarDate(
-        selectedCalendarDate
-    );
-}
-
-
-function closeCalendarModal() {
-
-    document.getElementById(
-        'calendarModal'
-    ).style.display = 'none';
-}
-
-
-function changeCalendarMonth(
-    amount
-) {
-
-    calendarMonth += amount;
-
-
-    if (calendarMonth < 0) {
-
-        calendarMonth = 11;
-        calendarYear--;
-
-    }
-
-    else if (calendarMonth > 11) {
-
-        calendarMonth = 0;
-        calendarYear++;
-    }
-
-
-    renderCalendar();
-}
-
-
-/* =====================================================
-   달력에 표시할 모든 일정
-===================================================== */
-
-function getCalendarEvents() {
-
-    const events = [];
-
-
-    todos.forEach(todo => {
-
-        if (todo.dueDate) {
-
-            events.push({
-
-                id: todo.id,
-
-                type: 'todo',
-
-                title: todo.title,
-
-                dueDate: todo.dueDate,
-
-                completed: false,
-
-                todoId: todo.id
-
-            });
-        }
-
-
-        if (
-            todo.type === 'project' &&
-            todo.subtasks
-        ) {
-
-            todo.subtasks.forEach(
-                sub => {
-
-                    if (
-                        sub.type !== 'list' &&
-                        sub.dueDate
-                    ) {
-
-                        events.push({
-
-                            id: sub.id,
-
-                            type: 'subtask',
-
-                            title: sub.text,
-
-                            dueDate:
-                                sub.dueDate,
-
-                            completed:
-                                !!sub.completed,
-
-                            todoId:
-                                todo.id
-
-                        });
-                    }
-                }
-            );
-        }
-
-    });
-
-
-    return events;
-}
-
-
-/* =====================================================
-   달력 렌더링
-===================================================== */
-
-function renderCalendar() {
-
-    const grid =
-        document.getElementById(
-            'calendarGrid'
-        );
-
-    const title =
-        document.getElementById(
-            'calendarTitle'
-        );
-
-
-    grid.innerHTML = '';
-
-
-    title.textContent =
-        `${calendarYear}년 ${
-            calendarMonth + 1
-        }월`;
-
-
-    const dayNames =
-        [
-            '일',
-            '월',
-            '화',
-            '수',
-            '목',
-            '금',
-            '토'
-        ];
-
-
-    dayNames.forEach(day => {
-
-        const el =
-            document.createElement(
-                'div'
-            );
-
-        el.className =
-            'calendar-day-name';
-
-        el.textContent =
-            day;
-
-        grid.appendChild(el);
-    });
-
-
-    const firstDay =
-        new Date(
-            calendarYear,
-            calendarMonth,
-            1
-        ).getDay();
-
-
-    const daysInMonth =
-        new Date(
-            calendarYear,
-            calendarMonth + 1,
-            0
-        ).getDate();
-
-
-    const events =
-        getCalendarEvents();
-
-
-    for (
-        let i = 0;
-        i < firstDay;
-        i++
-    ) {
-
-        grid.appendChild(
-            document.createElement(
-                'div'
-            )
-        );
-    }
-
-
-    for (
-        let day = 1;
-        day <= daysInMonth;
-        day++
-    ) {
-
-        const dateKey =
-            `${calendarYear}-${
-                String(
-                    calendarMonth + 1
-                ).padStart(2, '0')
-            }-${
-                String(day).padStart(2, '0')
-            }`;
-
-
-        const cell =
-            document.createElement(
-                'div'
-            );
-
-        cell.className =
-            'calendar-cell';
-
-
-        if (
-            dateKey ===
-            selectedCalendarDate
-        ) {
-
-            cell.classList.add(
-                'selected'
-            );
-        }
-
-
-        if (
-            dateKey ===
-            getTodayString()
-        ) {
-
-            cell.classList.add(
-                'today'
-            );
-        }
-
-
-        const number =
-            document.createElement(
-                'div'
-            );
-
-        number.className =
-            'calendar-number';
-
-        number.textContent =
-            day;
-
-        cell.appendChild(
-            number
-        );
-
-
-        const dayEvents =
-            events.filter(
-                e =>
-                    e.dueDate ===
-                    dateKey
-            );
-
-
-        dayEvents.forEach(event => {
-
-            const badge =
-                document.createElement(
-                    'div'
-                );
-
-            badge.className =
-                'calendar-event';
-
-
-            if (event.completed) {
-
-                badge.classList.add(
-                    'completed'
-                );
-            }
-
-
-            badge.textContent =
-                event.title;
-
-
-            cell.appendChild(
-                badge
-            );
-        });
-
-
-        cell.onclick = () => {
-
-            selectedCalendarDate =
-                dateKey;
-
-            renderCalendar();
-
-            showCalendarDate(
-                dateKey
-            );
-        };
-
-
-        grid.appendChild(
-            cell
-        );
-    }
-}
-
-
-/* =====================================================
-   특정 날짜 상세
-===================================================== */
-
-function showCalendarDate(
-    dateStr
-) {
-
-    selectedCalendarDate =
-        dateStr;
-
-
-    const title =
-        document.getElementById(
-            'calendarDetailTitle'
-        );
-
-    const list =
-        document.getElementById(
-            'calendarDetailList'
-        );
-
-
-    title.textContent =
-        `${dateStr} 마감 일정`;
-
-
-    list.innerHTML = '';
-
-
-    const events =
-        getCalendarEvents()
-            .filter(
-                e =>
-                    e.dueDate ===
-                    dateStr
-            );
-
-
-    if (events.length === 0) {
-
-        list.innerHTML = `
-            <div class="calendar-empty">
-                이 날짜에 마감인 일정이 없습니다.
-            </div>
-        `;
-
-        return;
-    }
-
-
-    events.forEach(event => {
-
-        const item =
-            document.createElement(
-                'div'
-            );
-
-        item.className =
-            'calendar-detail-item';
-
-
-        const todo =
-            todos.find(
-                t => t.id === event.todoId
-            );
-
-
-        const completed =
-            event.type === 'todo'
-                ? false
-                : event.completed;
-
-
-        item.innerHTML = `
-
-            <div class="calendar-detail-left">
-
-                <input
-                    type="checkbox"
-                    ${completed ? 'checked' : ''}
-                >
-
-                <span style="${
-                    completed
-                        ? 'text-decoration:line-through;color:#94a3b8;'
-                        : ''
-                }">
-
-                    ${escapeHTML(event.title)}
-
-                    ${
-                        event.type === 'subtask'
-                            ? `
-                                <small style="
-                                    color:#94a3b8;
-                                ">
-                                    (${escapeHTML(
-                                        todo
-                                            ? todo.title
-                                            : ''
-                                    )})
-                                </small>
-                              `
-                            : ''
-                    }
-
-                </span>
-
-            </div>
-
-
-            <div class="calendar-detail-buttons">
-
-                <button
-                    class="btn-action">
-                    수정
-                </button>
-
-                <button
-                    class="btn-delete">
-                    삭제
-                </button>
-
-            </div>
-        `;
-
-
-        const checkbox =
-            item.querySelector(
-                'input'
-            );
-
-
-        checkbox.onchange = () => {
-
-            if (
-                event.type === 'todo'
-            ) {
-
-                /*
-                 * 일반 할 일은
-                 * 달력에서 체크하면 바로 삭제되는
-                 * 대신 완료 상태를 별도로 저장하지 않기 때문에
-                 * 완료 처리 후 일정이 사라지는 방식으로 처리.
-                 */
-
-                todos =
-                    todos.filter(
-                        t =>
-                            t.id !==
-                            event.todoId
-                    );
-
-            }
-
-            else {
-
-                const parent =
-                    todos.find(
-                        t =>
-                            t.id ===
-                            event.todoId
-                    );
-
-
-                if (parent) {
-
-                    const sub =
-                        parent.subtasks.find(
-                            s =>
-                                s.id ===
-                                event.id
-                        );
-
-
-                    if (sub) {
-
-                        sub.completed =
-                            checkbox.checked;
-                    }
-                }
-            }
-
-
-            saveData();
-
-            render();
-
-            renderCalendar();
-
-            showCalendarDate(
-                selectedCalendarDate
-            );
-        };
-
-
-        const buttons =
-            item.querySelectorAll(
-                'button'
-            );
-
-
-        buttons[0].onclick =
-            () => {
-
-                if (
-                    event.type ===
-                    'todo'
-                ) {
-
-                    openModal(
-                        event.todoId
-                    );
-
-                } else {
-
-                    const parent =
-                        todos.find(
-                            t =>
-                                t.id ===
-                                event.todoId
-                        );
-
-
-                    if (!parent) return;
-
-
-                    const sub =
-                        parent.subtasks.find(
-                            s =>
-                                s.id ===
-                                event.id
-                        );
-
-
-                    if (!sub) return;
-
-
-                    const newText =
-                        prompt(
-                            '세부항목 수정:',
-                            sub.text
-                        );
-
-
-                    if (
-                        newText !== null &&
-                        newText.trim()
-                    ) {
-
-                        sub.text =
-                            newText.trim();
-
-                        saveData();
-
-                        render();
-
-                        renderCalendar();
-
-                        showCalendarDate(
-                            selectedCalendarDate
-                        );
-                    }
-                }
-            };
-
-
-        buttons[1].onclick =
-            () => {
-
-                if (
-                    !confirm(
-                        '정말 삭제하시겠습니까?'
-                    )
-                ) return;
-
-
-                if (
-                    event.type ===
-                    'todo'
-                ) {
-
-                    todos =
-                        todos.filter(
-                            t =>
-                                t.id !==
-                                event.todoId
-                        );
-
-                }
-
-                else {
-
-                    const parent =
-                        todos.find(
-                            t =>
-                                t.id ===
-                                event.todoId
-                        );
-
-
-                    if (parent) {
-
-                        parent.subtasks =
-                            parent.subtasks.filter(
-                                s =>
-                                    s.id !==
-                                    event.id
-                            );
-                    }
-                }
-
-
-                saveData();
-
-                render();
-
-                renderCalendar();
-
-                showCalendarDate(
-                    selectedCalendarDate
-                );
-            };
-
-
-        list.appendChild(
-            item
-        );
-    });
-}
-
-
-/* =====================================================
-   초기 실행
-===================================================== */
+/* =========================================================
+   시작
+========================================================= */
 
 render();
 
 </script>
 
 </body>
-</html>
+    </html>
