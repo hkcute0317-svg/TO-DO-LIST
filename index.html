@@ -1,589 +1,724 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>스마트 할 일 관리</title>
-
-    <style>
-        :root {
-            --bg-color: #f0f7ff;
-            --card-bg: #ffffff;
-            --primary-color: #60a5fa;
-            --primary-hover: #3b82f6;
-            --primary-light: #e0f2fe;
-            --danger-color: #f87171;
-            --danger-hover: #ef4444;
-            --success-color: #4ade80;
-            --text-color: #334155;
-            --text-sub: #64748b;
-            --border-radius: 16px;
-        }
-
-        body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 24px 16px;
-            display: flex;
-            justify-content: center;
-            user-select: none;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 580px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #2563eb;
-            font-size: 1.6rem;
-            margin-bottom: 20px;
-        }
-
-        /* =========================
-           빠른 메모 섹션
-           ========================= */
-        .memo-section {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 16px rgba(186, 230, 253, 0.25);
-            border: 1.5px solid #bae6fd;
-        }
-
-        .memo-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .memo-section h2 {
-            margin: 0;
-            color: #0284c7;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .memo-toggle-btn {
-            border: none;
-            background: #e0f2fe;
-            color: #0284c7;
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .memo-toggle-btn:hover {
-            background: #bae6fd;
-        }
-
-        .memo-body {
-            max-height: 1000px;
-            overflow: hidden;
-            opacity: 1;
-            transition: max-height 0.25s ease, opacity 0.2s ease;
-        }
-
-        .memo-body.collapsed {
-            max-height: 0;
-            opacity: 0;
-        }
-
-        .memo-textarea {
-            width: 100%;
-            min-height: 60px;
-            border: 1px solid #e0f2fe;
-            background-color: #f8fafc;
-            border-radius: 12px;
-            padding: 10px 12px;
-            box-sizing: border-box;
-            font-family: inherit;
-            font-size: 0.92rem;
-            color: var(--text-color);
-            outline: none;
-            resize: none;
-            overflow: hidden;
-            line-height: 1.5;
-            transition: border-color 0.2s, background-color 0.2s;
-        }
-
-        .memo-textarea:focus {
-            border-color: var(--primary-color);
-            background-color: #ffffff;
-        }
-
-        /* =========================
-           마감 알림
-           ========================= */
-        .due-alert-section {
-            background-color: #fff1f2;
-            border: 2px solid #fecdd3;
-            border-radius: var(--border-radius);
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.08);
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        .due-alert-section h2 {
-            margin: 0 0 10px 0;
-            color: #e11d48;
-            font-size: 1.05rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* =========================
-           분류
-           ========================= */
-        .category-group {
-            margin-bottom: 20px;
-        }
-
-        .category-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
-            border-bottom: 2px solid #bae6fd;
-        }
-
-        /* =========================
-           추가 버튼
-           ========================= */
-        .add-btn-main {
-            width: 100%;
-            padding: 14px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            font-size: 1.05rem;
-            font-weight: 700;
-            cursor: pointer;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 14px rgba(96, 165, 250, 0.35);
-            transition: all 0.2s ease;
-        }
-
-        .add-btn-main:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(59, 130, 246, 0.4);
-        }
-
-        /* =========================
-           스와이프 카드
-           ========================= */
-        .todo-card-wrapper {
-            position: relative;
-            margin-bottom: 16px;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            background-color: var(--success-color);
-            box-shadow: 0 4px 16px rgba(186, 230, 253, 0.25);
-        }
-
-        .swipe-hint {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-            font-weight: bold;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            z-index: 1;
-        }
-
-        .todo-card {
-            position: relative;
-            z-index: 2;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 18px 20px;
-            transition: transform 0.1s ease-out;
-            touch-action: pan-y;
-        }
-
-        .todo-card-standalone {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 18px 20px;
-            box-shadow: 0 4px 16px rgba(186, 230, 253, 0.25);
-            margin-bottom: 16px;
-        }
-
-        .todo-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .todo-title {
-            font-weight: 700;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            word-break: break-all;
-        }
-
-        .due-date {
-            font-size: 0.78rem;
-            color: #0284c7;
-            background: var(--primary-light);
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        /* =========================
-           진행률
-           ========================= */
-        .progress-container {
-            margin-top: 14px;
-        }
-
-        .progress-bar-bg {
-            background-color: #e0f2fe;
-            height: 12px;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            background: linear-gradient(90deg, #93c5fd, #3b82f6);
-            height: 100%;
-            width: 100%;
-            border-radius: 10px;
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .progress-text {
-            font-size: 0.85rem;
-            text-align: right;
-            color: var(--text-sub);
-            margin-top: 6px;
-            font-weight: 600;
-        }
-
-        .percent-val {
-            color: #2563eb;
-            font-size: 0.95rem;
-            display: inline-block;
-        }
-
-        /* =========================
-           서브 태스크
-           ========================= */
-        .subtasks-list {
-            margin-top: 14px;
-            border-top: 1px solid #f1f5f9;
-            padding-top: 10px;
-        }
-
-        .subtask-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.93rem;
-            margin-top: 8px;
-            padding: 6px 8px;
-            border-radius: 8px;
-            background-color: #f8fafc;
-        }
-
-        .subtask-item.completed span {
-            text-decoration: line-through;
-            color: #94a3b8;
-        }
-
-        /* =========================
-           중첩 목록
-           ========================= */
-        .nested-details {
-            margin-top: 10px;
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 12px;
-            padding: 8px 12px;
-        }
-
-        .nested-summary {
-            font-weight: 600;
-            font-size: 0.92rem;
-            cursor: pointer;
-            color: #0369a1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            outline: none;
-            list-style: none;
-        }
-
-        .nested-summary::-webkit-details-marker {
-            display: none;
-        }
-
-        .nested-summary-title::before {
-            content: '▶ ';
-            font-size: 0.75rem;
-            margin-right: 6px;
-            transition: transform 0.2s;
-            display: inline-block;
-        }
-
-        .nested-details[open] .nested-summary-title::before {
-            transform: rotate(90deg);
-        }
-
-        .nested-content {
-            margin-top: 10px;
-            padding-left: 10px;
-            border-left: 2px solid #93c5fd;
-        }
-
-        .subtask-input-group {
-            display: flex;
-            gap: 6px;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
-
-        .subtask-input-group select {
-            padding: 6px;
-            border: 1.5px solid #bae6fd;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            outline: none;
-            background: #ffffff;
-        }
-
-        .subtask-input-group input[type="text"] {
-            flex: 1;
-            min-width: 140px;
-            padding: 6px 10px;
-            border: 1.5px solid #bae6fd;
-            border-radius: 10px;
-            outline: none;
-            font-size: 0.88rem;
-        }
-
-        .subtask-input-group input[type="date"] {
-            border: 1.5px solid #bae6fd;
-            border-radius: 10px;
-            padding: 4px 6px;
-            outline: none;
-            font-size: 0.8rem;
-        }
-
-        .subtask-input-group button {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 6px 12px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-
-        /* =========================
-           버튼
-           ========================= */
-        .btn-action {
-            background: none;
-            border: none;
-            color: var(--text-sub);
-            cursor: pointer;
-            font-size: 0.85rem;
-            padding: 2px 6px;
-            border-radius: 6px;
-        }
-
-        .btn-action:hover {
-            background-color: #e0f2fe;
-            color: #0284c7;
-        }
-
-        .btn-delete {
-            background: none;
-            border: none;
-            color: #cbd5e1;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.9rem;
-            padding: 2px 6px;
-            border-radius: 6px;
-        }
-
-        .btn-delete:hover {
-            color: var(--danger-color);
-            background-color: #fef2f2;
-        }
-
-        /* =========================
-           모달
-           ========================= */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.35);
-            backdrop-filter: blur(3px);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            animation: fadeIn 0.2s ease-out;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 24px;
-            border-radius: 24px;
-            width: 88%;
-            max-width: 380px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            animation: popUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .modal-content h3 {
-            margin-top: 0;
-            margin-bottom: 16px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #475569;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px 12px;
-            box-sizing: border-box;
-            border: 1.5px solid #bae6fd;
-            border-radius: 12px;
-            outline: none;
-            font-size: 0.95rem;
-            background-color: #f8fafc;
-        }
-
-        .form-group input:disabled {
-            background-color: #f1f5f9;
-            color: #94a3b8;
-            cursor: not-allowed;
-        }
-
-        .modal-btns {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-secondary {
-            background: #f1f5f9;
-            color: #64748b;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-danger {
-            background: var(--danger-color);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes popUp {
-            from {
-                opacity: 0;
-                transform: scale(0.92);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스마트 할 일 관리</title>
+
+<style>
+:root {
+    --bg-color: #f0f7ff;
+    --card-bg: #ffffff;
+    --primary-color: #60a5fa;
+    --primary-hover: #3b82f6;
+    --primary-light: #e0f2fe;
+    --danger-color: #f87171;
+    --danger-hover: #ef4444;
+    --success-color: #4ade80;
+    --text-color: #334155;
+    --text-sub: #64748b;
+    --border-radius: 16px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 24px 16px;
+    display: flex;
+    justify-content: center;
+    user-select: none;
+}
+
+.container {
+    width: 100%;
+    max-width: 580px;
+}
+
+/* =========================
+   상단 제목
+========================= */
+
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    color: #2563eb;
+    font-size: 1.6rem;
+    margin: 0;
+}
+
+.calendar-open-btn {
+    border: none;
+    background: white;
+    color: #2563eb;
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(96,165,250,0.2);
+}
+
+.calendar-open-btn:hover {
+    background: #eff6ff;
+}
+
+/* =========================
+   빠른 메모
+========================= */
+
+.memo-section {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 16px rgba(186, 230, 253, 0.25);
+    border: 1.5px solid #bae6fd;
+}
+
+.memo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.memo-section h2 {
+    margin: 0;
+    color: #0284c7;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.memo-toggle {
+    border: none;
+    background: #e0f2fe;
+    color: #0284c7;
+    border-radius: 8px;
+    padding: 5px 9px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.memo-body {
+    margin-top: 10px;
+}
+
+.memo-body.collapsed {
+    display: none;
+}
+
+.memo-textarea {
+    width: 100%;
+    min-height: 60px;
+    border: 1px solid #e0f2fe;
+    background-color: #f8fafc;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    color: var(--text-color);
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+.memo-textarea:focus {
+    border-color: var(--primary-color);
+    background-color: #ffffff;
+}
+
+/* =========================
+   마감 알림
+========================= */
+
+.due-alert-section {
+    background-color: #fff1f2;
+    border: 2px solid #fecdd3;
+    border-radius: var(--border-radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+.due-alert-section h2 {
+    margin: 0 0 10px 0;
+    color: #e11d48;
+    font-size: 1.05rem;
+}
+
+/* =========================
+   카테고리
+========================= */
+
+.category-group {
+    margin-bottom: 20px;
+}
+
+.category-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #bae6fd;
+}
+
+/* =========================
+   추가 버튼
+========================= */
+
+.add-btn-main {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 14px rgba(96, 165, 250, 0.35);
+}
+
+.add-btn-main:hover {
+    background-color: var(--primary-hover);
+}
+
+/* =========================
+   할 일 카드
+========================= */
+
+.todo-card-wrapper {
+    position: relative;
+    margin-bottom: 16px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: var(--success-color);
+    box-shadow: 0 4px 16px rgba(186, 230, 253, 0.25);
+}
+
+.swipe-hint {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-weight: bold;
+    font-size: 0.95rem;
+    z-index: 1;
+}
+
+.todo-card {
+    position: relative;
+    z-index: 2;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 18px 20px;
+    transition: transform 0.1s ease-out;
+    touch-action: pan-y;
+}
+
+.todo-card-standalone {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 18px 20px;
+    box-shadow: 0 4px 16px rgba(186, 230, 253, 0.25);
+    margin-bottom: 16px;
+}
+
+.todo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.todo-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    word-break: break-all;
+}
+
+/* =========================
+   마감일
+========================= */
+
+.due-date {
+    font-size: 0.78rem;
+    color: #0284c7;
+    background: var(--primary-light);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* =========================
+   진행률
+========================= */
+
+.progress-container {
+    margin-top: 14px;
+}
+
+.progress-bar-bg {
+    background-color: #e0f2fe;
+    height: 12px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    background: linear-gradient(90deg, #93c5fd, #3b82f6);
+    height: 100%;
+    width: 0%;
+    border-radius: 10px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-text {
+    font-size: 0.85rem;
+    text-align: right;
+    color: var(--text-sub);
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+.percent-val {
+    color: #2563eb;
+    font-size: 0.95rem;
+}
+
+/* =========================
+   세부목록
+========================= */
+
+.subtasks-list {
+    margin-top: 14px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 10px;
+}
+
+.subtask-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.93rem;
+    margin-top: 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    gap: 8px;
+}
+
+.subtask-item.completed span {
+    text-decoration: line-through;
+    color: #94a3b8;
+}
+
+/* =========================
+   중첩 세부목록
+========================= */
+
+.nested-details {
+    margin-top: 10px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    padding: 8px 12px;
+}
+
+.nested-summary {
+    font-weight: 600;
+    font-size: 0.92rem;
+    cursor: pointer;
+    color: #0369a1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    outline: none;
+    list-style: none;
+}
+
+.nested-summary::-webkit-details-marker {
+    display: none;
+}
+
+.nested-summary-title::before {
+    content: '▶ ';
+    font-size: 0.75rem;
+    margin-right: 6px;
+    display: inline-block;
+}
+
+.nested-details[open] .nested-summary-title::before {
+    transform: rotate(90deg);
+}
+
+.nested-content {
+    margin-top: 10px;
+    padding-left: 10px;
+    border-left: 2px solid #93c5fd;
+}
+
+/* =========================
+   입력
+========================= */
+
+.subtask-input-group {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.subtask-input-group select,
+.subtask-input-group input {
+    border: 1.5px solid #bae6fd;
+    border-radius: 10px;
+    outline: none;
+    background: white;
+}
+
+.subtask-input-group select {
+    padding: 6px;
+}
+
+.subtask-input-group input[type="text"] {
+    flex: 1;
+    min-width: 140px;
+    padding: 6px 10px;
+}
+
+.subtask-input-group input[type="date"] {
+    padding: 4px 6px;
+}
+
+.subtask-input-group button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* =========================
+   버튼
+========================= */
+
+.btn-action,
+.btn-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+
+.btn-action {
+    color: var(--text-sub);
+}
+
+.btn-action:hover {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.btn-delete {
+    color: #cbd5e1;
+}
+
+.btn-delete:hover {
+    color: var(--danger-color);
+    background: #fef2f2;
+}
+
+/* =========================
+   모달
+========================= */
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(3px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.modal-content {
+    background: white;
+    padding: 24px;
+    border-radius: 24px;
+    width: 88%;
+    max-width: 380px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #bae6fd;
+    border-radius: 12px;
+    outline: none;
+    background: #f8fafc;
+}
+
+.modal-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-secondary,
+.btn-primary,
+.btn-danger {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* =========================
+   달력
+========================= */
+
+.calendar-modal-content {
+    max-width: 460px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.calendar-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.calendar-nav {
+    border: none;
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 7px 11px;
+    cursor: pointer;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.calendar-day-name {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 700;
+    padding: 5px 0;
+}
+
+.calendar-cell {
+    min-height: 65px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 4px;
+    cursor: pointer;
+    background: white;
+    overflow: hidden;
+}
+
+.calendar-cell:hover {
+    background: #f8fafc;
+}
+
+.calendar-cell.selected {
+    border: 2px solid #60a5fa;
+    background: #eff6ff;
+}
+
+.calendar-cell.today {
+    box-shadow: inset 0 0 0 2px #bae6fd;
+}
+
+.calendar-number {
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.calendar-event {
+    background: #fecdd3;
+    color: #be123c;
+    font-size: 0.62rem;
+    border-radius: 4px;
+    padding: 2px 3px;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.calendar-event.completed {
+    background: #e2e8f0;
+    color: #64748b;
+    text-decoration: line-through;
+}
+
+/* 달력 상세 */
+
+.calendar-detail {
+    margin-top: 16px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 14px;
+}
+
+.calendar-detail-title {
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.calendar-detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 0;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.calendar-detail-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.calendar-detail-left span {
+    word-break: break-all;
+}
+
+.calendar-detail-buttons {
+    display: flex;
+    flex-shrink: 0;
+    gap: 4px;
+}
+
+.calendar-empty {
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.calendar-close {
+    width: 100%;
+    margin-top: 16px;
+    padding: 11px;
+    border: none;
+    border-radius: 12px;
+    background: #334155;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* =========================
+   애니메이션
+========================= */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-    <h1>📝 스마트 할 일 관리</h1>
+    <!-- 상단 -->
+    <div class="top-header">
+        <h1>📝 스마트 할 일 관리</h1>
 
-    <!-- =========================
-         빠른 메모
-         ========================= -->
+        <button class="calendar-open-btn" onclick="openCalendarModal()">
+            📅 달력
+        </button>
+    </div>
+
+    <!-- 빠른 메모 -->
     <div class="memo-section">
 
-        <div class="memo-header">
+        <div class="memo-header" onclick="toggleMemo()">
             <h2>✏️ 빠른 메모장</h2>
 
-            <button
-                id="memoToggleBtn"
-                class="memo-toggle-btn"
-                onclick="toggleMemo()"
-            >
+            <button class="memo-toggle"
+                    id="memoToggleBtn"
+                    onclick="event.stopPropagation(); toggleMemo();">
                 접기 ▲
             </button>
         </div>
 
-        <div id="memoBody" class="memo-body">
+        <div class="memo-body" id="memoBody">
             <textarea
                 id="quickMemo"
                 class="memo-textarea"
@@ -593,35 +728,28 @@
 
     </div>
 
-    <!-- =========================
-         마감 알림
-         ========================= -->
-    <div
-        id="dueAlertSection"
-        class="due-alert-section"
-        style="display: none;"
-    >
+    <!-- 마감 알림 -->
+    <div id="dueAlertSection"
+         class="due-alert-section"
+         style="display:none;">
+
         <h2>🚨 마감 오늘 / 지남!</h2>
         <div id="dueAlertList"></div>
+
     </div>
 
-    <button
-        class="add-btn-main"
-        onclick="openModal()"
-    >
+    <!-- 추가 -->
+    <button class="add-btn-main" onclick="openModal()">
         + 새 할 일 추가하기
     </button>
 
-    <!-- 오늘 할 일 -->
-    <div
-        id="todayTaskSection"
-        class="category-group"
-        style="display: none;"
-    >
-        <div
-            class="category-title"
-            style="color: #0284c7;"
-        >
+    <!-- 오늘 -->
+    <div id="todayTaskSection"
+         class="category-group"
+         style="display:none;">
+
+        <div class="category-title"
+             style="color:#0284c7;">
             ☀️ 오늘 할 일 목록
         </div>
 
@@ -629,15 +757,12 @@
     </div>
 
     <!-- 커미션 -->
-    <div
-        id="commissionSection"
-        class="category-group"
-        style="display: none;"
-    >
-        <div
-            class="category-title"
-            style="color: #d97706;"
-        >
+    <div id="commissionSection"
+         class="category-group"
+         style="display:none;">
+
+        <div class="category-title"
+             style="color:#d97706;">
             🎨 커미션 목록
         </div>
 
@@ -645,42 +770,39 @@
     </div>
 
     <!-- 숙제 -->
-    <div
-        id="homeworkSection"
-        class="category-group"
-        style="display: none;"
-    >
-        <div
-            class="category-title"
-            style="color: #7e22ce;"
-        >
+    <div id="homeworkSection"
+         class="category-group"
+         style="display:none;">
+
+        <div class="category-title"
+             style="color:#7e22ce;">
             📚 숙제 목록
         </div>
 
         <div id="homeworkList"></div>
     </div>
 
-    <!-- 일반 할 일 -->
-    <div
-        id="mainSection"
-        class="category-group"
-    >
-        <div
-            class="category-title"
-            id="mainSectionTitle"
-            style="color: #64748b; display: none;"
-        >
+    <!-- 일반 -->
+    <div id="mainSection"
+         class="category-group">
+
+        <div id="mainSectionTitle"
+             class="category-title"
+             style="color:#64748b; display:none;">
             📋 기타 및 일반 할 일
         </div>
 
         <div id="todoList"></div>
+
     </div>
 
 </div>
 
+
 <!-- =========================
-     추가 / 수정 모달
-     ========================= -->
+     할 일 추가 / 수정
+========================= -->
+
 <div id="todoModal" class="modal">
 
     <div class="modal-content">
@@ -690,14 +812,14 @@
         <div class="form-group">
             <label>특성 분류</label>
 
-            <select
-                id="todoCategory"
-                onchange="handleCategoryChange()"
-            >
+            <select id="todoCategory"
+                    onchange="handleCategoryChange()">
+
                 <option value="none">일반 할 일</option>
                 <option value="today">☀️ 오늘 할 일</option>
                 <option value="commission">🎨 커미션</option>
                 <option value="homework">📚 숙제</option>
+
             </select>
         </div>
 
@@ -712,7 +834,7 @@
                 </option>
 
                 <option value="project">
-                    2. 세부목록 방식 (남은 % 표시)
+                    2. 세부목록 방식 (진행률 표시)
                 </option>
 
             </select>
@@ -746,16 +868,14 @@
 
             <button
                 class="btn-secondary"
-                onclick="closeModal()"
-            >
+                onclick="closeModal()">
                 취소
             </button>
 
             <button
                 class="btn-primary"
                 id="saveTodoBtn"
-                onclick="addTodo()"
-            >
+                onclick="addTodo()">
                 추가하기
             </button>
 
@@ -765,22 +885,18 @@
 
 </div>
 
+
 <!-- =========================
-     삭제 확인 모달
-     ========================= -->
+     삭제 모달
+========================= -->
+
 <div id="deleteModal" class="modal">
 
     <div class="modal-content">
 
         <h3>🗑️ 진짜 삭제하시겠습니까?</h3>
 
-        <p
-            style="
-                color: var(--text-sub);
-                font-size: 0.95rem;
-                margin-bottom: 20px;
-            "
-        >
+        <p style="color:var(--text-sub);">
             삭제된 항목은 복구할 수 없습니다.
         </p>
 
@@ -788,15 +904,13 @@
 
             <button
                 class="btn-secondary"
-                onclick="closeDeleteModal()"
-            >
+                onclick="closeDeleteModal()">
                 취소
             </button>
 
             <button
                 class="btn-danger"
-                id="confirmDeleteBtn"
-            >
+                id="confirmDeleteBtn">
                 삭제하기
             </button>
 
@@ -806,1900 +920,1593 @@
 
 </div>
 
+
+<!-- =========================
+     달력 모달
+========================= -->
+
+<div id="calendarModal" class="modal">
+
+    <div class="modal-content calendar-modal-content">
+
+        <div class="calendar-header">
+
+            <button
+                class="calendar-nav"
+                onclick="changeCalendarMonth(-1)">
+                ◀
+            </button>
+
+            <div
+                id="calendarTitle"
+                class="calendar-title">
+            </div>
+
+            <button
+                class="calendar-nav"
+                onclick="changeCalendarMonth(1)">
+                ▶
+            </button>
+
+        </div>
+
+        <div
+            id="calendarGrid"
+            class="calendar-grid">
+        </div>
+
+        <div class="calendar-detail">
+
+            <div
+                id="calendarDetailTitle"
+                class="calendar-detail-title">
+                날짜를 선택해주세요
+            </div>
+
+            <div
+                id="calendarDetailList">
+            </div>
+
+        </div>
+
+        <button
+            class="calendar-close"
+            onclick="closeCalendarModal()">
+            닫기
+        </button>
+
+    </div>
+
+</div>
+
+
 <script>
 
-    /* =========================
-       데이터
-       ========================= */
+/* =====================================================
+   데이터
+===================================================== */
 
-    let todos =
-        JSON.parse(localStorage.getItem('myTodos')) || [];
+let todos =
+    JSON.parse(localStorage.getItem('myTodos')) || [];
 
-    let deleteTarget = null;
-    let editingTodoId = null;
-
-
-    /* =========================
-       날짜
-       ========================= */
-
-    function getTodayString() {
-
-        const today = new Date();
-
-        return `${today.getFullYear()}-${String(
-            today.getMonth() + 1
-        ).padStart(2, '0')}-${String(
-            today.getDate()
-        ).padStart(2, '0')}`;
-
-    }
+let deleteTarget = null;
+let editingTodoId = null;
 
 
-    function checkDateChangeAndCleanup() {
+/* =====================================================
+   날짜
+===================================================== */
 
-        const todayStr = getTodayString();
+function getTodayString() {
 
-        const lastVisitedDate =
-            localStorage.getItem('lastVisitedDate');
+    const today = new Date();
 
-        if (
-            lastVisitedDate &&
-            lastVisitedDate !== todayStr
-        ) {
+    return `${today.getFullYear()}-${
+        String(today.getMonth() + 1).padStart(2, '0')
+    }-${
+        String(today.getDate()).padStart(2, '0')
+    }`;
+}
 
-            todos =
-                todos.filter(
-                    t => t.category !== 'today'
-                );
 
-            localStorage.setItem(
-                'myTodos',
-                JSON.stringify(todos)
+/* =====================================================
+   날짜 변경 시 '오늘 할 일' 초기화
+===================================================== */
+
+function checkDateChangeAndCleanup() {
+
+    const todayStr = getTodayString();
+
+    const lastVisitedDate =
+        localStorage.getItem('lastVisitedDate');
+
+    if (
+        lastVisitedDate &&
+        lastVisitedDate !== todayStr
+    ) {
+
+        todos =
+            todos.filter(
+                t => t.category !== 'today'
             );
-
-        }
-
-        localStorage.setItem(
-            'lastVisitedDate',
-            todayStr
-        );
-
-    }
-
-
-    checkDateChangeAndCleanup();
-
-
-    /* =========================
-       분류 변경
-       ========================= */
-
-    function handleCategoryChange() {
-
-        const category =
-            document.getElementById(
-                'todoCategory'
-            ).value;
-
-        const dueDateInput =
-            document.getElementById(
-                'todoDueDate'
-            );
-
-        if (category === 'today') {
-
-            dueDateInput.value = '';
-            dueDateInput.disabled = true;
-
-        } else {
-
-            dueDateInput.disabled = false;
-
-        }
-
-    }
-
-
-    /* =========================
-       메모 자동 크기
-       ========================= */
-
-    function autoResizeMemo(el) {
-
-        el.style.height = 'auto';
-
-        el.style.height =
-            el.scrollHeight + 'px';
-
-    }
-
-
-    /* =========================
-       메모 불러오기
-       ========================= */
-
-    const memoTextarea =
-        document.getElementById(
-            'quickMemo'
-        );
-
-    memoTextarea.value =
-        localStorage.getItem(
-            'myQuickMemo'
-        ) || '';
-
-    autoResizeMemo(memoTextarea);
-
-
-    memoTextarea.addEventListener(
-        'input',
-        () => {
-
-            localStorage.setItem(
-                'myQuickMemo',
-                memoTextarea.value
-            );
-
-            autoResizeMemo(
-                memoTextarea
-            );
-
-        }
-    );
-
-
-    /* =========================
-       메모 접기 / 펼치기
-       ========================= */
-
-    function toggleMemo() {
-
-        const memoBody =
-            document.getElementById(
-                'memoBody'
-            );
-
-        const toggleBtn =
-            document.getElementById(
-                'memoToggleBtn'
-            );
-
-        memoBody.classList.toggle(
-            'collapsed'
-        );
-
-        if (
-            memoBody.classList.contains(
-                'collapsed'
-            )
-        ) {
-
-            toggleBtn.textContent =
-                '펼치기 ▼';
-
-            localStorage.setItem(
-                'memoCollapsed',
-                'true'
-            );
-
-        } else {
-
-            toggleBtn.textContent =
-                '접기 ▲';
-
-            localStorage.setItem(
-                'memoCollapsed',
-                'false'
-            );
-
-            autoResizeMemo(
-                memoTextarea
-            );
-
-        }
-
-    }
-
-
-    /* =========================
-       저장
-       ========================= */
-
-    function saveData() {
-
-        localStorage.setItem(
-            'myTodos',
-            JSON.stringify(todos)
-        );
-
-    }
-
-
-    /* =========================
-       모달 열기
-       ========================= */
-
-    function openModal(editId = null) {
-
-        editingTodoId = editId;
-
-        const modalTitle =
-            document.getElementById(
-                'modalTitle'
-            );
-
-        const saveBtn =
-            document.getElementById(
-                'saveTodoBtn'
-            );
-
-
-        if (editId) {
-
-            const todo =
-                todos.find(
-                    t => t.id === editId
-                );
-
-            modalTitle.innerText =
-                '✏️ 할 일 수정';
-
-            document.getElementById(
-                'todoCategory'
-            ).value =
-                todo.category || 'none';
-
-            document.getElementById(
-                'todoType'
-            ).value =
-                todo.type;
-
-            document.getElementById(
-                'todoTitle'
-            ).value =
-                todo.title;
-
-            document.getElementById(
-                'todoDueDate'
-            ).value =
-                todo.dueDate || '';
-
-            saveBtn.innerText =
-                '수정 완료';
-
-            saveBtn.onclick =
-                updateTodo;
-
-        } else {
-
-            modalTitle.innerText =
-                '✨ 새 할 일 추가';
-
-            document.getElementById(
-                'todoCategory'
-            ).value =
-                'none';
-
-            document.getElementById(
-                'todoType'
-            ).value =
-                'simple';
-
-            document.getElementById(
-                'todoTitle'
-            ).value =
-                '';
-
-            document.getElementById(
-                'todoDueDate'
-            ).value =
-                '';
-
-            saveBtn.innerText =
-                '추가하기';
-
-            saveBtn.onclick =
-                addTodo;
-
-        }
-
-
-        handleCategoryChange();
-
-        document.getElementById(
-            'todoModal'
-        ).style.display =
-            'flex';
-
-    }
-
-
-    function closeModal() {
-
-        document.getElementById(
-            'todoModal'
-        ).style.display =
-            'none';
-
-        editingTodoId = null;
-
-    }
-
-
-    /* =========================
-       할 일 추가
-       ========================= */
-
-    function addTodo() {
-
-        const category =
-            document.getElementById(
-                'todoCategory'
-            ).value;
-
-        const type =
-            document.getElementById(
-                'todoType'
-            ).value;
-
-        const title =
-            document.getElementById(
-                'todoTitle'
-            ).value.trim();
-
-        const dueDate =
-            document.getElementById(
-                'todoDueDate'
-            ).value;
-
-
-        if (!title) {
-
-            alert(
-                '제목을 입력해주세요.'
-            );
-
-            return;
-
-        }
-
-
-        todos.push({
-
-            id: Date.now(),
-
-            category,
-
-            type,
-
-            title,
-
-            dueDate:
-                category === 'today'
-                    ? null
-                    : (dueDate || null),
-
-            subtasks: []
-
-        });
-
 
         saveData();
-
-        render();
-
-        closeModal();
-
     }
 
+    localStorage.setItem(
+        'lastVisitedDate',
+        todayStr
+    );
+}
 
-    /* =========================
-       할 일 수정
-       ========================= */
+checkDateChangeAndCleanup();
 
-    function updateTodo() {
+
+/* =====================================================
+   저장
+===================================================== */
+
+function saveData() {
+
+    localStorage.setItem(
+        'myTodos',
+        JSON.stringify(todos)
+    );
+}
+
+
+/* =====================================================
+   빠른 메모
+===================================================== */
+
+const memoTextarea =
+    document.getElementById('quickMemo');
+
+memoTextarea.value =
+    localStorage.getItem('myQuickMemo') || '';
+
+
+function autoResizeMemo(el) {
+
+    el.style.height = 'auto';
+
+    el.style.height =
+        el.scrollHeight + 'px';
+}
+
+
+autoResizeMemo(memoTextarea);
+
+
+memoTextarea.addEventListener(
+    'input',
+    () => {
+
+        localStorage.setItem(
+            'myQuickMemo',
+            memoTextarea.value
+        );
+
+        autoResizeMemo(memoTextarea);
+    }
+);
+
+
+/* 메모 접기 상태 저장 */
+
+let memoCollapsed =
+    localStorage.getItem('memoCollapsed') === 'true';
+
+
+function applyMemoState() {
+
+    const body =
+        document.getElementById('memoBody');
+
+    const button =
+        document.getElementById('memoToggleBtn');
+
+    if (memoCollapsed) {
+
+        body.classList.add('collapsed');
+        button.textContent = '펼치기 ▼';
+
+    } else {
+
+        body.classList.remove('collapsed');
+        button.textContent = '접기 ▲';
+
+    }
+}
+
+
+function toggleMemo() {
+
+    memoCollapsed = !memoCollapsed;
+
+    localStorage.setItem(
+        'memoCollapsed',
+        memoCollapsed
+    );
+
+    applyMemoState();
+}
+
+
+applyMemoState();
+
+
+/* =====================================================
+   모달
+===================================================== */
+
+function handleCategoryChange() {
+
+    const category =
+        document.getElementById('todoCategory').value;
+
+    const dateInput =
+        document.getElementById('todoDueDate');
+
+    if (category === 'today') {
+
+        dateInput.value = '';
+        dateInput.disabled = true;
+
+    } else {
+
+        dateInput.disabled = false;
+    }
+}
+
+
+function openModal(editId = null) {
+
+    editingTodoId = editId;
+
+    const modalTitle =
+        document.getElementById('modalTitle');
+
+    const saveBtn =
+        document.getElementById('saveTodoBtn');
+
+    if (editId !== null) {
 
         const todo =
-            todos.find(
-                t => t.id === editingTodoId
-            );
+            todos.find(t => t.id === editId);
 
         if (!todo) return;
 
+        modalTitle.innerText =
+            '✏️ 할 일 수정';
 
-        const title =
-            document.getElementById(
-                'todoTitle'
-            ).value.trim();
+        document.getElementById('todoCategory').value =
+            todo.category || 'none';
+
+        document.getElementById('todoType').value =
+            todo.type;
+
+        document.getElementById('todoTitle').value =
+            todo.title;
+
+        document.getElementById('todoDueDate').value =
+            todo.dueDate || '';
+
+        saveBtn.innerText =
+            '수정 완료';
+
+        saveBtn.onclick =
+            updateTodo;
+
+    } else {
+
+        modalTitle.innerText =
+            '✨ 새 할 일 추가';
+
+        document.getElementById('todoCategory').value =
+            'none';
+
+        document.getElementById('todoType').value =
+            'simple';
+
+        document.getElementById('todoTitle').value =
+            '';
+
+        document.getElementById('todoDueDate').value =
+            '';
+
+        saveBtn.innerText =
+            '추가하기';
+
+        saveBtn.onclick =
+            addTodo;
+    }
+
+    handleCategoryChange();
+
+    document.getElementById(
+        'todoModal'
+    ).style.display = 'flex';
+}
 
 
-        if (!title) {
+function closeModal() {
 
-            alert(
-                '제목을 입력해주세요.'
-            );
+    document.getElementById(
+        'todoModal'
+    ).style.display = 'none';
 
-            return;
-
-        }
-
-
-        const category =
-            document.getElementById(
-                'todoCategory'
-            ).value;
+    editingTodoId = null;
+}
 
 
-        todo.category =
-            category;
+/* =====================================================
+   할 일 추가
+===================================================== */
 
-        todo.type =
-            document.getElementById(
-                'todoType'
-            ).value;
+function addTodo() {
 
-        todo.title =
-            title;
+    const category =
+        document.getElementById('todoCategory').value;
 
-        todo.dueDate =
+    const type =
+        document.getElementById('todoType').value;
+
+    const title =
+        document.getElementById('todoTitle')
+        .value.trim();
+
+    const dueDate =
+        document.getElementById('todoDueDate').value;
+
+    if (!title) {
+
+        alert('제목을 입력해주세요.');
+        return;
+    }
+
+    todos.push({
+
+        id: Date.now(),
+
+        category,
+
+        type,
+
+        title,
+
+        dueDate:
             category === 'today'
                 ? null
-                : (
-                    document.getElementById(
-                        'todoDueDate'
-                    ).value || null
-                );
+                : (dueDate || null),
 
+        subtasks: []
+
+    });
+
+    saveData();
+
+    render();
+
+    closeModal();
+}
+
+
+/* =====================================================
+   할 일 수정
+===================================================== */
+
+function updateTodo() {
+
+    const todo =
+        todos.find(
+            t => t.id === editingTodoId
+        );
+
+    if (!todo) return;
+
+    const title =
+        document.getElementById('todoTitle')
+        .value.trim();
+
+    if (!title) {
+
+        alert('제목을 입력해주세요.');
+        return;
+    }
+
+    const category =
+        document.getElementById('todoCategory').value;
+
+    todo.category = category;
+
+    todo.type =
+        document.getElementById('todoType').value;
+
+    todo.title =
+        title;
+
+    todo.dueDate =
+        category === 'today'
+            ? null
+            : (
+                document.getElementById(
+                    'todoDueDate'
+                ).value || null
+            );
+
+    saveData();
+
+    render();
+
+    closeModal();
+
+    renderCalendar();
+}
+
+
+/* =====================================================
+   삭제
+===================================================== */
+
+function openDeleteModal(
+    type,
+    todoId,
+    subtaskId = null,
+    nestedId = null
+) {
+
+    deleteTarget = {
+        type,
+        todoId,
+        subtaskId,
+        nestedId
+    };
+
+    document.getElementById(
+        'deleteModal'
+    ).style.display = 'flex';
+
+    document.getElementById(
+        'confirmDeleteBtn'
+    ).onclick = () => {
+
+        executeDelete();
+
+        closeDeleteModal();
+    };
+}
+
+
+function closeDeleteModal() {
+
+    document.getElementById(
+        'deleteModal'
+    ).style.display = 'none';
+
+    deleteTarget = null;
+}
+
+
+function executeDelete() {
+
+    if (!deleteTarget) return;
+
+    const {
+        type,
+        todoId,
+        subtaskId,
+        nestedId
+    } = deleteTarget;
+
+
+    if (type === 'todo') {
+
+        todos =
+            todos.filter(
+                t => t.id !== todoId
+            );
 
         saveData();
 
         render();
 
-        closeModal();
+        renderCalendar();
 
     }
 
 
-    /* =========================
-       삭제
-       ========================= */
+    else if (type === 'subtask') {
 
-    function openDeleteModal(
-        type,
-        todoId,
-        subtaskId = null,
-        nestedId = null
-    ) {
+        const todo =
+            todos.find(
+                t => t.id === todoId
+            );
 
-        deleteTarget = {
-            type,
-            todoId,
-            subtaskId,
-            nestedId
-        };
+        if (todo) {
 
-
-        document.getElementById(
-            'deleteModal'
-        ).style.display =
-            'flex';
-
-
-        document.getElementById(
-            'confirmDeleteBtn'
-        ).onclick = () => {
-
-            executeDelete();
-
-            closeDeleteModal();
-
-        };
-
-    }
-
-
-    function closeDeleteModal() {
-
-        document.getElementById(
-            'deleteModal'
-        ).style.display =
-            'none';
-
-        deleteTarget = null;
-
-    }
-
-
-    function executeDelete() {
-
-        if (!deleteTarget) return;
-
-        const {
-            type,
-            todoId,
-            subtaskId,
-            nestedId
-        } = deleteTarget;
-
-
-        if (type === 'todo') {
-
-            todos =
-                todos.filter(
-                    t => t.id !== todoId
+            todo.subtasks =
+                todo.subtasks.filter(
+                    s => s.id !== subtaskId
                 );
 
             saveData();
 
-            render();
+            renderSubtasksUI(todoId);
 
+            updateProgressUI(todoId);
+
+            renderCalendar();
         }
-
-        else if (type === 'subtask') {
-
-            const todo =
-                todos.find(
-                    t => t.id === todoId
-                );
-
-            if (todo) {
-
-                todo.subtasks =
-                    todo.subtasks.filter(
-                        s => s.id !== subtaskId
-                    );
-
-                saveData();
-
-                updateProgressUI(
-                    todoId
-                );
-
-                renderSubtasksUI(
-                    todoId
-                );
-
-            }
-
-        }
-
-        else if (type === 'nested') {
-
-            const todo =
-                todos.find(
-                    t => t.id === todoId
-                );
-
-            const parentSub =
-                todo
-                    ? todo.subtasks.find(
-                        s => s.id === subtaskId
-                    )
-                    : null;
-
-
-            if (
-                parentSub &&
-                parentSub.items
-            ) {
-
-                parentSub.items =
-                    parentSub.items.filter(
-                        n => n.id !== nestedId
-                    );
-
-                saveData();
-
-                updateProgressUI(
-                    todoId
-                );
-
-                renderSubtasksUI(
-                    todoId
-                );
-
-            }
-
-        }
-
     }
 
 
-    /* =========================
-       퍼센트 애니메이션
-       ========================= */
+    else if (type === 'nested') {
 
-    function animatePercentage(
-        element,
-        startVal,
-        endVal,
-        duration = 500
+        const todo =
+            todos.find(
+                t => t.id === todoId
+            );
+
+        const parentSub =
+            todo
+                ? todo.subtasks.find(
+                    s => s.id === subtaskId
+                )
+                : null;
+
+        if (
+            parentSub &&
+            parentSub.items
+        ) {
+
+            parentSub.items =
+                parentSub.items.filter(
+                    n => n.id !== nestedId
+                );
+
+            saveData();
+
+            renderSubtasksUI(todoId);
+
+            updateProgressUI(todoId);
+
+            renderCalendar();
+        }
+    }
+}
+
+
+/* =====================================================
+   진행률
+   0% → 100%
+===================================================== */
+
+function calculateTodoProgress(todo) {
+
+    if (
+        !todo ||
+        !todo.subtasks ||
+        todo.subtasks.length === 0
     ) {
+        return 0;
+    }
 
-        let startTimestamp = null;
-
-
-        const step = timestamp => {
-
-            if (!startTimestamp)
-                startTimestamp =
-                    timestamp;
+    let totalPoints = 0;
+    let completedPoints = 0;
 
 
-            const progress =
-                Math.min(
-                    (
-                        timestamp -
-                        startTimestamp
-                    ) / duration,
-                    1
-                );
+    todo.subtasks.forEach(sub => {
+
+        if (sub.type === 'list') {
+
+            const items =
+                sub.items || [];
+
+            if (items.length === 0) {
+
+                totalPoints++;
+
+            } else {
+
+                totalPoints +=
+                    items.length;
+
+                completedPoints +=
+                    items.filter(
+                        i => i.completed
+                    ).length;
+            }
+
+        } else {
+
+            totalPoints++;
+
+            if (sub.completed) {
+
+                completedPoints++;
+            }
+        }
+
+    });
 
 
-            const currentVal =
-                Math.floor(
-                    progress *
-                    (endVal - startVal) +
-                    startVal
-                );
+    if (totalPoints === 0) return 0;
 
+
+    return Math.round(
+        (completedPoints / totalPoints) * 100
+    );
+}
+
+
+function animatePercentage(
+    element,
+    startVal,
+    endVal,
+    duration = 450
+) {
+
+    let startTimestamp = null;
+
+    const step = timestamp => {
+
+        if (!startTimestamp) {
+            startTimestamp = timestamp;
+        }
+
+        const progress =
+            Math.min(
+                (timestamp - startTimestamp) /
+                duration,
+                1
+            );
+
+        const currentVal =
+            Math.floor(
+                progress *
+                (endVal - startVal) +
+                startVal
+            );
+
+        element.innerText =
+            currentVal;
+
+        if (progress < 1) {
+
+            window.requestAnimationFrame(
+                step
+            );
+
+        } else {
 
             element.innerText =
-                currentVal;
-
-
-            if (progress < 1) {
-
-                window.requestAnimationFrame(
-                    step
-                );
-
-            } else {
-
-                element.innerText =
-                    endVal;
-
-            }
-
-        };
-
-
-        window.requestAnimationFrame(
-            step
-        );
-
-    }
-
-
-    /* =========================
-       진행률 계산
-       ========================= */
-
-    function calculateTodoProgress(todo) {
-
-        if (
-            !todo ||
-            !todo.subtasks ||
-            todo.subtasks.length === 0
-        ) {
-
-            return 0;
-
+                endVal;
         }
+    };
+
+    window.requestAnimationFrame(step);
+}
 
 
-        let totalPoints = 0;
-        let completedPoints = 0;
+function updateProgressUI(todoId) {
+
+    const todo =
+        todos.find(
+            t => t.id === todoId
+        );
+
+    if (
+        !todo ||
+        todo.type !== 'project'
+    ) return;
 
 
-        todo.subtasks.forEach(
-            sub => {
+    const targetPercent =
+        calculateTodoProgress(todo);
 
-                if (sub.type === 'list') {
+    const bar =
+        document.getElementById(
+            `bar-${todoId}`
+        );
 
-                    const subItems =
-                        sub.items || [];
-
-
-                    if (
-                        subItems.length === 0
-                    ) {
-
-                        totalPoints += 1;
-
-                        if (
-                            sub.completed
-                        ) {
-
-                            completedPoints += 1;
-
-                        }
-
-                    }
-
-                    else {
-
-                        totalPoints +=
-                            subItems.length;
-
-                        completedPoints +=
-                            subItems.filter(
-                                i => i.completed
-                            ).length;
-
-                    }
-
-                }
-
-                else {
-
-                    totalPoints += 1;
-
-                    if (sub.completed) {
-
-                        completedPoints += 1;
-
-                    }
-
-                }
-
-            }
+    const percent =
+        document.getElementById(
+            `percent-${todoId}`
         );
 
 
-        if (totalPoints === 0)
-            return 0;
+    if (bar && percent) {
 
+        const current =
+            parseInt(
+                percent.innerText
+            ) || 0;
 
-        return Math.round(
-            (
-                completedPoints /
-                totalPoints
-            ) * 100
+        bar.style.width =
+            `${targetPercent}%`;
+
+        animatePercentage(
+            percent,
+            current,
+            targetPercent
         );
-
     }
+}
 
 
-    /* =========================
-       진행률 UI
-       ========================= */
+/* =====================================================
+   세부목록 수정
+===================================================== */
 
-    function updateProgressUI(todoId) {
+function editSubtaskText(
+    todoId,
+    subtaskId
+) {
 
-        const todo =
-            todos.find(
-                t => t.id === todoId
-            );
-
-        if (
-            !todo ||
-            todo.type !== 'project'
-        ) return;
-
-
-        const targetPercent =
-            calculateTodoProgress(
-                todo
-            );
-
-
-        const barFill =
-            document.getElementById(
-                `bar-${todoId}`
-            );
-
-        const percentSpan =
-            document.getElementById(
-                `percent-${todoId}`
-            );
-
-
-        if (
-            barFill &&
-            percentSpan
-        ) {
-
-            const currentPercent =
-                parseInt(
-                    percentSpan.innerText
-                ) || 0;
-
-
-            barFill.style.width =
-                `${targetPercent}%`;
-
-
-            animatePercentage(
-                percentSpan,
-                currentPercent,
-                targetPercent,
-                450
-            );
-
-        }
-
-    }
-
-
-    /* =========================
-       세부목록 수정
-       ========================= */
-
-    function editSubtaskText(
-        todoId,
-        subtaskId
-    ) {
-
-        const todo =
-            todos.find(
-                t => t.id === todoId
-            );
-
-        const subtask =
-            todo
-                ? todo.subtasks.find(
-                    s => s.id === subtaskId
-                )
-                : null;
-
-
-        if (!subtask) return;
-
-
-        const newText =
-            prompt(
-                '세부목록 제목 수정:',
-                subtask.text
-            );
-
-
-        if (
-            newText !== null &&
-            newText.trim() !== ''
-        ) {
-
-            subtask.text =
-                newText.trim();
-
-            saveData();
-
-            renderSubtasksUI(
-                todoId
-            );
-
-        }
-
-    }
-
-
-    /* =========================
-       하위 항목 수정
-       ========================= */
-
-    function editNestedItemText(
-        todoId,
-        subtaskId,
-        nestedId
-    ) {
-
-        const todo =
-            todos.find(
-                t => t.id === todoId
-            );
-
-        const subtask =
-            todo
-                ? todo.subtasks.find(
-                    s => s.id === subtaskId
-                )
-                : null;
-
-        const nestedItem =
-            subtask &&
-            subtask.items
-                ? subtask.items.find(
-                    n => n.id === nestedId
-                )
-                : null;
-
-
-        if (!nestedItem) return;
-
-
-        const newText =
-            prompt(
-                '하위 세부항목 수정:',
-                nestedItem.text
-            );
-
-
-        if (
-            newText !== null &&
-            newText.trim() !== ''
-        ) {
-
-            nestedItem.text =
-                newText.trim();
-
-            saveData();
-
-            renderSubtasksUI(
-                todoId
-            );
-
-        }
-
-    }
-
-
-    /* =========================
-       세부목록 UI
-       ========================= */
-
-    function renderSubtasksUI(todoId) {
-
-        const todo =
-            todos.find(
-                t => t.id === todoId
-            );
-
-        const subListEl =
-            document.getElementById(
-                `sublist-${todoId}`
-            );
-
-
-        if (
-            !todo ||
-            !subListEl
-        ) return;
-
-
-        subListEl.innerHTML =
-            todo.subtasks.map(
-                sub => {
-
-                    if (
-                        sub.type === 'list'
-                    ) {
-
-                        const subItems =
-                            sub.items || [];
-
-                        const total =
-                            subItems.length;
-
-                        const completed =
-                            subItems.filter(
-                                i => i.completed
-                            ).length;
-
-
-                        const subPercent =
-                            total === 0
-                                ? 0
-                                : Math.round(
-                                    (
-                                        completed /
-                                        total
-                                    ) * 100
-                                );
-
-
-                        let nestedHTML =
-                            subItems.map(
-                                n => `
-
-                                <div
-                                    class="subtask-item
-                                    ${n.completed ? 'completed' : ''}"
-                                >
-
-                                    <div
-                                        style="
-                                            display:flex;
-                                            align-items:center;
-                                            gap:8px;
-                                        "
-                                    >
-
-                                        <input
-                                            type="checkbox"
-                                            ${n.completed ? 'checked' : ''}
-                                            onchange="
-                                                toggleNestedItem(
-                                                    ${todo.id},
-                                                    ${sub.id},
-                                                    ${n.id}
-                                                )
-                                            "
-                                        >
-
-                                        <span>
-                                            ${n.text}
-                                        </span>
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <button
-                                            class="btn-action"
-                                            onclick="
-                                                editNestedItemText(
-                                                    ${todo.id},
-                                                    ${sub.id},
-                                                    ${n.id}
-                                                )
-                                            "
-                                        >
-                                            수정
-                                        </button>
-
-                                        <button
-                                            class="btn-delete"
-                                            onclick="
-                                                openDeleteModal(
-                                                    'nested',
-                                                    ${todo.id},
-                                                    ${sub.id},
-                                                    ${n.id}
-                                                )
-                                            "
-                                        >
-                                            ✕
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                            `
-                            ).join('');
-
-
-                        return `
-
-                            <details
-                                class="nested-details"
-                            >
-
-                                <summary
-                                    class="nested-summary"
-                                >
-
-                                    <span
-                                        class="nested-summary-title"
-                                    >
-                                        📂 ${sub.text}
-                                    </span>
-
-
-                                    <div
-                                        style="
-                                            display:flex;
-                                            align-items:center;
-                                            gap:6px;
-                                        "
-                                        onclick="
-                                            event.stopPropagation();
-                                        "
-                                    >
-
-                                        <span
-                                            style="
-                                                font-size:0.85rem;
-                                                color:#0284c7;
-                                                margin-right:4px;
-                                            "
-                                        >
-                                            진행도:
-                                            <strong>
-                                                ${subPercent}%
-                                            </strong>
-                                        </span>
-
-
-                                        <button
-                                            class="btn-action"
-                                            onclick="
-                                                editSubtaskText(
-                                                    ${todo.id},
-                                                    ${sub.id}
-                                                )
-                                            "
-                                        >
-                                            수정
-                                        </button>
-
-                                    </div>
-
-                                </summary>
-
-
-                                <div
-                                    class="nested-content"
-                                >
-
-                                    ${nestedHTML}
-
-
-                                    <div
-                                        class="subtask-input-group"
-                                        style="margin-top:8px;"
-                                    >
-
-                                        <input
-                                            type="text"
-                                            id="nestedInput-${todo.id}-${sub.id}"
-                                            placeholder="하위 세부항목 입력..."
-                                        >
-
-
-                                        <button
-                                            onclick="
-                                                addNestedItem(
-                                                    ${todo.id},
-                                                    ${sub.id}
-                                                )
-                                            "
-                                        >
-                                            추가
-                                        </button>
-
-
-                                        <button
-                                            class="btn-delete"
-                                            style="margin-left:auto;"
-                                            onclick="
-                                                openDeleteModal(
-                                                    'subtask',
-                                                    ${todo.id},
-                                                    ${sub.id}
-                                                )
-                                            "
-                                        >
-                                            세부목록 삭제
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                            </details>
-
-                        `;
-
-                    }
-
-                    else {
-
-                        return `
-
-                            <div
-                                class="
-                                    subtask-item
-                                    ${sub.completed ? 'completed' : ''}
-                                "
-                            >
-
-                                <div
-                                    style="
-                                        display:flex;
-                                        align-items:center;
-                                        gap:8px;
-                                        flex-wrap:wrap;
-                                    "
-                                >
-
-                                    <input
-                                        type="checkbox"
-                                        ${sub.completed ? 'checked' : ''}
-                                        onchange="
-                                            toggleSubtask(
-                                                ${todo.id},
-                                                ${sub.id}
-                                            )
-                                        "
-                                    >
-
-                                    <span>
-                                        ${sub.text}
-                                    </span>
-
-                                    ${
-                                        sub.dueDate
-                                            ? `
-                                                <span class="due-date">
-                                                    📅 ${sub.dueDate}
-                                                </span>
-                                            `
-                                            : ''
-                                    }
-
-                                </div>
-
-
-                                <div>
-
-                                    <button
-                                        class="btn-action"
-                                        onclick="
-                                            editSubtaskText(
-                                                ${todo.id},
-                                                ${sub.id}
-                                            )
-                                        "
-                                    >
-                                        수정
-                                    </button>
-
-
-                                    <button
-                                        class="btn-delete"
-                                        onclick="
-                                            openDeleteModal(
-                                                'subtask',
-                                                ${todo.id},
-                                                ${sub.id}
-                                            )
-                                        "
-                                    >
-                                        ✕
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                        `;
-
-                    }
-
-                }
-            ).join('');
-
-    }
-
-
-    /* =========================
-       세부목록 추가
-       ========================= */
-
-    function addSubtask(todoId) {
-
-        const typeSelect =
-            document.getElementById(
-                `subType-${todoId}`
-            );
-
-        const input =
-            document.getElementById(
-                `subInput-${todoId}`
-            );
-
-        const dateInput =
-            document.getElementById(
-                `subDate-${todoId}`
-            );
-
-
-        const subType =
-            typeSelect
-                ? typeSelect.value
-                : 'simple';
-
-
-        const text =
-            input.value.trim();
-
-
-        if (!text) return;
-
-
-        const todo =
-            todos.find(
-                t => t.id === todoId
-            );
-
-
-        if (subType === 'list') {
-
-            todo.subtasks.push({
-
-                id: Date.now(),
-
-                type: 'list',
-
-                text,
-
-                items: []
-
-            });
-
-        }
-
-        else {
-
-            todo.subtasks.push({
-
-                id: Date.now(),
-
-                type: 'simple',
-
-                text,
-
-                completed: false,
-
-                dueDate:
-                    dateInput
-                        ? (
-                            dateInput.value ||
-                            null
-                        )
-                        : null
-
-            });
-
-        }
-
-
-        saveData();
-
-        input.value = '';
-
-        if (dateInput)
-            dateInput.value = '';
-
-
-        updateProgressUI(
-            todoId
+    const todo =
+        todos.find(
+            t => t.id === todoId
         );
 
-        renderSubtasksUI(
-            todoId
-        );
-
-    }
-
-
-    /* =========================
-       하위 항목 추가
-       ========================= */
-
-    function addNestedItem(
-        todoId,
-        subtaskId
-    ) {
-
-        const input =
-            document.getElementById(
-                `nestedInput-${todoId}-${subtaskId}`
-            );
-
-
-        const text =
-            input.value.trim();
-
-
-        if (!text) return;
-
-
-        const todo =
-            todos.find(
-                t => t.id === todoId
-            );
-
-
-        const subtask =
-            todo.subtasks.find(
-                s => s.id === subtaskId
-            );
-
-
-        if (!subtask.items)
-            subtask.items = [];
-
-
-        subtask.items.push({
-
-            id: Date.now(),
-
-            text,
-
-            completed: false
-
-        });
-
-
-        saveData();
-
-        input.value = '';
-
-
-        updateProgressUI(
-            todoId
-        );
-
-        renderSubtasksUI(
-            todoId
-        );
-
-    }
-
-
-    /* =========================
-       세부 항목 체크
-       ========================= */
-
-    function toggleSubtask(
-        todoId,
-        subtaskId
-    ) {
-
-        const todo =
-            todos.find(
-                t => t.id === todoId
-            );
-
-
-        const subtask =
-            todo.subtasks.find(
-                s => s.id === subtaskId
-            );
-
-
-        subtask.completed =
-            !subtask.completed;
-
-
-        saveData();
-
-        updateProgressUI(
-            todoId
-        );
-
-        renderSubtasksUI(
-            todoId
-        );
-
-    }
-
-
-    /* =========================
-       하위 세부 항목 체크
-       ========================= */
-
-    function toggleNestedItem(
-        todoId,
-        subtaskId,
-        nestedId
-    ) {
-
-        const todo =
-            todos.find(
-                t => t.id === todoId
-            );
-
-
-        const subtask =
-            todo.subtasks.find(
-                s => s.id === subtaskId
-            );
-
-
-        const nestedItem =
-            subtask.items.find(
-                i => i.id === nestedId
-            );
-
-
-        nestedItem.completed =
-            !nestedItem.completed;
-
-
-        saveData();
-
-        updateProgressUI(
-            todoId
-        );
-
-        /*
-         * 기존에는 renderSubtasksUI가
-         * <details>를 새로 만들어서
-         * 열려 있던 목록이 닫혔음.
-         *
-         * 여기서는 현재 열린 상태를 기억한 뒤
-         * 다시 열어줌.
-         */
-
-        const details =
-            document.querySelector(
-                `.nested-details`
-            );
-
-
-        const openStates = {};
-
-
-        document
-            .querySelectorAll(
-                '.nested-details'
-            )
-            .forEach(
-                (el, index) => {
-
-                    openStates[index] =
-                        el.open;
-
-                }
-            );
-
-
-        renderSubtasksUI(
-            todoId
-        );
-
-
-        document
-            .querySelectorAll(
-                '.nested-details'
-            )
-            .forEach(
-                (el, index) => {
-
-                    if (
-                        openStates[index]
-                    ) {
-
-                        el.open = true;
-
-                    }
-
-                }
-            );
-
-    }
-
-
-    /* =========================
-       세부목록 방식 변경
-       ========================= */
-
-    function handleSubTypeChange(
-        todoId
-    ) {
-
-        const typeSelect =
-            document.getElementById(
-                `subType-${todoId}`
-            );
-
-        const dateInput =
-            document.getElementById(
-                `subDate-${todoId}`
-            );
-
-
-        if (
-            typeSelect &&
-            dateInput
-        ) {
-
-            if (
-                typeSelect.value ===
-                'list'
-            ) {
-
-                dateInput.style.display =
-                    'none';
-
-            } else {
-
-                dateInput.style.display =
-                    'inline-block';
-
-            }
-
-        }
-
-    }
-
-
-    /* =========================
-       스와이프
-       ========================= */
-
-    function initSwipe(
-        cardEl,
-        id
-    ) {
-
-        let startX = 0;
-        let currentX = 0;
-        let isSwiping = false;
-
-
-        const onStart = e => {
-
-            startX =
-                e.touches
-                    ? e.touches[0].clientX
-                    : e.clientX;
-
-            isSwiping = true;
-
-            cardEl.style.transition =
-                'none';
-
-        };
-
-
-        const onMove = e => {
-
-            if (!isSwiping) return;
-
-
-            const x =
-                e.touches
-                    ? e.touches[0].clientX
-                    : e.clientX;
-
-
-            currentX =
-                x - startX;
-
-
-            if (currentX > 0) {
-
-                cardEl.style.transform =
-                    `translateX(${currentX}px)`;
-
-            }
-
-        };
-
-
-        const onEnd = () => {
-
-            if (!isSwiping) return;
-
-            isSwiping = false;
-
-            cardEl.style.transition =
-                'transform 0.25s ease';
-
-
-            if (
-                currentX >
-                cardEl.offsetWidth * 0.4
-            ) {
-
-                cardEl.style.transform =
-                    `translateX(${cardEl.offsetWidth + 50}px)`;
-
-
-                setTimeout(
-                    () => {
-
-                        todos =
-                            todos.filter(
-                                t => t.id !== id
-                            );
-
-                        saveData();
-
-                        render();
-
-                    },
-                    200
-                );
-
-            }
-
-            else {
-
-                cardEl.style.transform =
-                    'translateX(0px)';
-
-            }
-
-
-            currentX = 0;
-
-        };
-
-
-        cardEl.addEventListener(
-            'touchstart',
-            onStart
-        );
-
-        cardEl.addEventListener(
-            'touchmove',
-            onMove
-        );
-
-        cardEl.addEventListener(
-            'touchend',
-            onEnd
-        );
-
-
-        cardEl.addEventListener(
-            'mousedown',
-            onStart
-        );
-
-        window.addEventListener(
-            'mousemove',
-            onMove
-        );
-
-        window.addEventListener(
-            'mouseup',
-            onEnd
-        );
-
-    }
-
-
-    /* =========================
-       카드 생성
-       ========================= */
-
-    function createCardElement(
+    const subtask =
         todo
+            ? todo.subtasks.find(
+                s => s.id === subtaskId
+            )
+            : null;
+
+    if (!subtask) return;
+
+
+    const newText =
+        prompt(
+            '세부목록 제목 수정:',
+            subtask.text
+        );
+
+
+    if (
+        newText !== null &&
+        newText.trim() !== ''
     ) {
 
-        const wrapper =
-            document.createElement(
-                'div'
+        subtask.text =
+            newText.trim();
+
+        saveData();
+
+        renderSubtasksUI(todoId);
+
+        renderCalendar();
+    }
+}
+
+
+function editNestedItemText(
+    todoId,
+    subtaskId,
+    nestedId
+) {
+
+    const todo =
+        todos.find(
+            t => t.id === todoId
+        );
+
+    const subtask =
+        todo
+            ? todo.subtasks.find(
+                s => s.id === subtaskId
+            )
+            : null;
+
+    const nestedItem =
+        subtask &&
+        subtask.items
+            ? subtask.items.find(
+                n => n.id === nestedId
+            )
+            : null;
+
+    if (!nestedItem) return;
+
+
+    const newText =
+        prompt(
+            '하위 세부항목 수정:',
+            nestedItem.text
+        );
+
+
+    if (
+        newText !== null &&
+        newText.trim() !== ''
+    ) {
+
+        nestedItem.text =
+            newText.trim();
+
+        saveData();
+
+        renderSubtasksUI(todoId);
+
+        renderCalendar();
+    }
+}
+
+
+/* =====================================================
+   세부목록 렌더링
+===================================================== */
+
+function renderSubtasksUI(todoId) {
+
+    const todo =
+        todos.find(
+            t => t.id === todoId
+        );
+
+    const subListEl =
+        document.getElementById(
+            `sublist-${todoId}`
+        );
+
+    if (
+        !todo ||
+        !subListEl
+    ) return;
+
+
+    subListEl.innerHTML = '';
+
+
+    todo.subtasks.forEach(sub => {
+
+        /* -------------------------
+           중첩 목록
+        ------------------------- */
+
+        if (sub.type === 'list') {
+
+            const subItems =
+                sub.items || [];
+
+            const total =
+                subItems.length;
+
+            const completed =
+                subItems.filter(
+                    i => i.completed
+                ).length;
+
+            const subPercent =
+                total === 0
+                    ? 0
+                    : Math.round(
+                        (completed / total) *
+                        100
+                    );
+
+
+            const details =
+                document.createElement(
+                    'details'
+                );
+
+            details.className =
+                'nested-details';
+
+
+            /*
+             * 중요:
+             * 기존 open 상태를 유지한다.
+             * 체크박스를 눌렀다고 details가
+             * 자동으로 닫히지 않는다.
+             */
+
+            details.open =
+                sub._open !== false;
+
+
+            details.addEventListener(
+                'toggle',
+                () => {
+
+                    sub._open =
+                        details.open;
+
+                    saveData();
+                }
             );
 
 
-        if (
-            todo.type === 'simple'
-        ) {
+            const summary =
+                document.createElement(
+                    'summary'
+                );
 
-            wrapper.className =
-                'todo-card-wrapper';
+            summary.className =
+                'nested-summary';
 
 
-            wrapper.innerHTML = `
+            summary.innerHTML = `
+                <span class="nested-summary-title">
+                    📂 ${escapeHTML(sub.text)}
+                </span>
 
-                <div class="swipe-hint">
-                    ✓ 완료됨!
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    gap:6px;
+                "
+                onclick="event.stopPropagation();">
+
+                    <span style="
+                        font-size:0.85rem;
+                        color:#0284c7;
+                    ">
+                        진행도:
+                        <strong>
+                            ${subPercent}%
+                        </strong>
+                    </span>
+
+                    <button
+                        class="btn-action"
+                        onclick="
+                            editSubtaskText(
+                                ${todo.id},
+                                ${sub.id}
+                            )
+                        ">
+                        수정
+                    </button>
                 </div>
-
-
-                <div
-                    class="todo-card"
-                    id="card-${todo.id}"
-                >
-
-                    <div
-                        class="todo-header"
-                    >
-
-                        <div
-                            class="todo-title"
-                        >
-
-                            <span>
-                                👉 ${todo.title}
-                            </span>
-
-
-                            ${
-                                todo.dueDate
-                                    ? `
-                                        <span class="due-date">
-                                            📅 ${todo.dueDate}
-                                        </span>
-                                    `
-                                    : ''
-                            }
-
-                        </div>
-
-
-                        <div>
-
-                            <button
-                                class="btn-action"
-                                onclick="
-                                    openModal(
-                                        ${todo.id}
-                                    )
-                                "
-                            >
-                                수정
-                            </button>
-
-
-                            <button
-                                class="btn-delete"
-                                onclick="
-                                    openDeleteModal(
-                                        'todo',
-                                        ${todo.id}
-                                    )
-                                "
-                            >
-                                삭제
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        style="
-                            font-size:0.75rem;
-                            color:#94a3b8;
-                            margin-top:6px;
-                        "
-                    >
-                        💡 오른쪽으로 밀어서 바로 완료
-                    </div>
-
-                </div>
-
             `;
 
 
-            setTimeout(
-                () => {
+            details.appendChild(summary);
 
-                    const cardEl =
-                        document.getElementById(
-                            `card-${todo.id}`
+
+            const content =
+                document.createElement(
+                    'div'
+                );
+
+            content.className =
+                'nested-content';
+
+
+            subItems.forEach(n => {
+
+                const item =
+                    document.createElement(
+                        'div'
+                    );
+
+                item.className =
+                    `subtask-item ${
+                        n.completed
+                            ? 'completed'
+                            : ''
+                    }`;
+
+
+                item.innerHTML = `
+                    <div style="
+                        display:flex;
+                        align-items:center;
+                        gap:8px;
+                        min-width:0;
+                    ">
+
+                        <input
+                            type="checkbox"
+                            ${n.completed ? 'checked' : ''}
+                        >
+
+                        <span>
+                            ${escapeHTML(n.text)}
+                        </span>
+
+                    </div>
+
+                    <div>
+
+                        <button
+                            class="btn-action">
+                            수정
+                        </button>
+
+                        <button
+                            class="btn-delete">
+                            ✕
+                        </button>
+
+                    </div>
+                `;
+
+
+                const checkbox =
+                    item.querySelector(
+                        'input'
+                    );
+
+                checkbox.onchange = () => {
+
+                    n.completed =
+                        checkbox.checked;
+
+                    saveData();
+
+                    /*
+                     * 여기서 전체 render()를
+                     * 호출하지 않는다.
+                     *
+                     * 그래서 펼쳐진 details가
+                     * 그대로 유지된다.
+                     */
+
+                    item.classList.toggle(
+                        'completed',
+                        n.completed
+                    );
+
+                    updateProgressUI(
+                        todoId
+                    );
+
+                    renderSubtasksUI(
+                        todoId
+                    );
+                };
+
+
+                const buttons =
+                    item.querySelectorAll(
+                        'button'
+                    );
+
+
+                buttons[0].onclick =
+                    () => {
+
+                        editNestedItemText(
+                            todo.id,
+                            sub.id,
+                            n.id
                         );
+                    };
 
 
-                    if (cardEl)
-                        initSwipe(
-                            cardEl,
-                            todo.id
+                buttons[1].onclick =
+                    () => {
+
+                        openDeleteModal(
+                            'nested',
+                            todo.id,
+                            sub.id,
+                            n.id
                         );
+                    };
 
-                },
-                0
-            );
+
+                content.appendChild(item);
+            });
+
+
+            content.innerHTML += `
+                <div class="subtask-input-group">
+
+                    <input
+                        type="text"
+                        id="nestedInput-${todo.id}-${sub.id}"
+                        placeholder="하위 세부항목 입력..."
+                    >
+
+                    <button
+                        onclick="
+                            addNestedItem(
+                                ${todo.id},
+                                ${sub.id}
+                            )
+                        ">
+                        추가
+                    </button>
+
+                    <button
+                        class="btn-delete"
+                        style="margin-left:auto;"
+                        onclick="
+                            openDeleteModal(
+                                'subtask',
+                                ${todo.id},
+                                ${sub.id}
+                            )
+                        ">
+                        세부목록 삭제
+                    </button>
+
+                </div>
+            `;
+
+
+            details.appendChild(content);
+
+            subListEl.appendChild(details);
 
         }
 
+
+        /* -------------------------
+           일반 세부항목
+        ------------------------- */
+
         else {
 
-            wrapper.className =
-                'todo-card-standalone';
+            const item =
+                document.createElement(
+                    'div'
+                );
+
+            item.className =
+                `subtask-item ${
+                    sub.completed
+                        ? 'completed'
+                        : ''
+                }`;
 
 
-            const progress =
-                calculateTodoProgress(
-                    todo
+            item.innerHTML = `
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    gap:8px;
+                    flex-wrap:wrap;
+                ">
+
+                    <input
+                        type="checkbox"
+                        ${sub.completed ? 'checked' : ''}
+                    >
+
+                    <span>
+                        ${escapeHTML(sub.text)}
+                    </span>
+
+                    ${
+                        sub.dueDate
+                            ? `
+                                <span class="due-date">
+                                    📅 ${sub.dueDate}
+                                </span>
+                              `
+                            : ''
+                    }
+
+                </div>
+
+                <div>
+
+                    <button
+                        class="btn-action">
+                        수정
+                    </button>
+
+                    <button
+                        class="btn-delete">
+                        ✕
+                    </button>
+
+                </div>
+            `;
+
+
+            const checkbox =
+                item.querySelector(
+                    'input'
                 );
 
 
-            wrapper.innerHTML = `
+            checkbox.onchange = () => {
 
-                <div
-                    class="todo-header"
-                >
+                sub.completed =
+                    checkbox.checked;
 
-                    <div
-                        class="todo-title"
-                    >
+                saveData();
+
+                renderSubtasksUI(
+                    todoId
+                );
+
+                updateProgressUI(
+                    todoId
+                );
+
+                renderCalendar();
+            };
+
+
+            const buttons =
+                item.querySelectorAll(
+                    'button'
+                );
+
+
+            buttons[0].onclick =
+                () => {
+
+                    editSubtaskText(
+                        todoId,
+                        sub.id
+                    );
+                };
+
+
+            buttons[1].onclick =
+                () => {
+
+                    openDeleteModal(
+                        'subtask',
+                        todoId,
+                        sub.id
+                    );
+                };
+
+
+            subListEl.appendChild(item);
+        }
+
+    });
+}
+
+
+/* =====================================================
+   HTML 문자 안전처리
+===================================================== */
+
+function escapeHTML(str) {
+
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+
+/* =====================================================
+   세부항목 추가
+===================================================== */
+
+function addSubtask(todoId) {
+
+    const typeSelect =
+        document.getElementById(
+            `subType-${todoId}`
+        );
+
+    const input =
+        document.getElementById(
+            `subInput-${todoId}`
+        );
+
+    const dateInput =
+        document.getElementById(
+            `subDate-${todoId}`
+        );
+
+
+    const subType =
+        typeSelect
+            ? typeSelect.value
+            : 'simple';
+
+
+    const text =
+        input.value.trim();
+
+
+    if (!text) return;
+
+
+    const todo =
+        todos.find(
+            t => t.id === todoId
+        );
+
+
+    if (!todo) return;
+
+
+    if (subType === 'list') {
+
+        todo.subtasks.push({
+
+            id: Date.now(),
+
+            type: 'list',
+
+            text,
+
+            items: [],
+
+            _open: true
+
+        });
+
+    } else {
+
+        todo.subtasks.push({
+
+            id: Date.now(),
+
+            type: 'simple',
+
+            text,
+
+            completed: false,
+
+            dueDate:
+                dateInput
+                    ? (
+                        dateInput.value ||
+                        null
+                    )
+                    : null
+
+        });
+    }
+
+
+    saveData();
+
+    input.value = '';
+
+    if (dateInput) {
+        dateInput.value = '';
+    }
+
+
+    renderSubtasksUI(todoId);
+
+    updateProgressUI(todoId);
+
+    renderCalendar();
+}
+
+
+/* =====================================================
+   중첩 항목 추가
+===================================================== */
+
+function addNestedItem(
+    todoId,
+    subtaskId
+) {
+
+    const input =
+        document.getElementById(
+            `nestedInput-${todoId}-${subtaskId}`
+        );
+
+    if (!input) return;
+
+
+    const text =
+        input.value.trim();
+
+    if (!text) return;
+
+
+    const todo =
+        todos.find(
+            t => t.id === todoId
+        );
+
+    if (!todo) return;
+
+
+    const subtask =
+        todo.subtasks.find(
+            s => s.id === subtaskId
+        );
+
+    if (!subtask) return;
+
+
+    if (!subtask.items) {
+        subtask.items = [];
+    }
+
+
+    /*
+     * 항목을 추가하면
+     * 세부목록은 자동으로 펼쳐진 상태 유지
+     */
+
+    subtask._open = true;
+
+
+    subtask.items.push({
+
+        id: Date.now(),
+
+        text,
+
+        completed: false
+
+    });
+
+
+    saveData();
+
+    input.value = '';
+
+
+    renderSubtasksUI(todoId);
+
+    updateProgressUI(todoId);
+
+    renderCalendar();
+}
+
+
+/* =====================================================
+   진행률 체크
+===================================================== */
+
+function toggleSubtask(
+    todoId,
+    subtaskId
+) {
+
+    const todo =
+        todos.find(
+            t => t.id === todoId
+        );
+
+    if (!todo) return;
+
+
+    const subtask =
+        todo.subtasks.find(
+            s => s.id === subtaskId
+        );
+
+    if (!subtask) return;
+
+
+    subtask.completed =
+        !subtask.completed;
+
+
+    saveData();
+
+    renderSubtasksUI(todoId);
+
+    updateProgressUI(todoId);
+
+    renderCalendar();
+}
+
+
+function toggleNestedItem(
+    todoId,
+    subtaskId,
+    nestedId
+) {
+
+    const todo =
+        todos.find(
+            t => t.id === todoId
+        );
+
+    if (!todo) return;
+
+
+    const subtask =
+        todo.subtasks.find(
+            s => s.id === subtaskId
+        );
+
+    if (!subtask) return;
+
+
+    const nestedItem =
+        subtask.items.find(
+            i => i.id === nestedId
+        );
+
+    if (!nestedItem) return;
+
+
+    nestedItem.completed =
+        !nestedItem.completed;
+
+
+    saveData();
+
+    /*
+     * 여기에서도 _open 값이
+     * 유지되므로 접히지 않는다.
+     */
+
+    renderSubtasksUI(todoId);
+
+    updateProgressUI(todoId);
+
+    renderCalendar();
+}
+
+
+/* =====================================================
+   세부목록 입력 타입
+===================================================== */
+
+function handleSubTypeChange(todoId) {
+
+    const typeSelect =
+        document.getElementById(
+            `subType-${todoId}`
+        );
+
+    const dateInput =
+        document.getElementById(
+            `subDate-${todoId}`
+        );
+
+
+    if (
+        typeSelect &&
+        dateInput
+    ) {
+
+        dateInput.style.display =
+            typeSelect.value === 'list'
+                ? 'none'
+                : 'inline-block';
+    }
+}
+
+
+/* =====================================================
+   카드 생성
+===================================================== */
+
+function createCardElement(todo) {
+
+    const wrapper =
+        document.createElement('div');
+
+
+    /* 일반 방식 */
+
+    if (todo.type === 'simple') {
+
+        wrapper.className =
+            'todo-card-wrapper';
+
+
+        wrapper.innerHTML = `
+
+            <div class="swipe-hint">
+                ✓ 완료됨!
+            </div>
+
+            <div
+                class="todo-card"
+                id="card-${todo.id}">
+
+                <div class="todo-header">
+
+                    <div class="todo-title">
 
                         <span>
-                            📂 ${todo.title}
+                            👉 ${escapeHTML(todo.title)}
                         </span>
-
 
                         ${
                             todo.dueDate
@@ -2707,12 +2514,11 @@
                                     <span class="due-date">
                                         📅 ${todo.dueDate}
                                     </span>
-                                `
+                                  `
                                 : ''
                         }
 
                     </div>
-
 
                     <div>
 
@@ -2722,11 +2528,9 @@
                                 openModal(
                                     ${todo.id}
                                 )
-                            "
-                        >
+                            ">
                             수정
                         </button>
-
 
                         <button
                             class="btn-delete"
@@ -2735,8 +2539,7 @@
                                     'todo',
                                     ${todo.id}
                                 )
-                            "
-                        >
+                            ">
                             삭제
                         </button>
 
@@ -2744,487 +2547,1319 @@
 
                 </div>
 
-
-                <div
-                    class="progress-container"
-                >
-
-                    <div
-                        class="progress-bar-bg"
-                    >
-
-                        <div
-                            class="progress-bar-fill"
-                            id="bar-${todo.id}"
-                            style="
-                                width:${progress}%;
-                            "
-                        ></div>
-
-                    </div>
-
-
-                    <div
-                        class="progress-text"
-                    >
-                        진행도:
-                        <strong
-                            class="percent-val"
-                        >
-                            <span
-                                id="percent-${todo.id}"
-                            >
-                                ${progress}
-                            </span>%
-                        </strong>
-                    </div>
-
+                <div style="
+                    font-size:0.75rem;
+                    color:#94a3b8;
+                    margin-top:6px;
+                ">
+                    💡 오른쪽으로 밀어서 바로 완료
                 </div>
 
-
-                <div
-                    class="subtasks-list"
-                >
-
-                    <div
-                        id="sublist-${todo.id}"
-                    ></div>
+            </div>
+        `;
 
 
-                    <div
-                        class="subtask-input-group"
-                    >
+        setTimeout(() => {
 
-                        <select
-                            id="subType-${todo.id}"
-                            onchange="
-                                handleSubTypeChange(
-                                    ${todo.id}
-                                )
-                            "
-                        >
+            const card =
+                document.getElementById(
+                    `card-${todo.id}`
+                );
 
-                            <option value="simple">
-                                일반 항목
-                            </option>
+            if (card) {
 
-                            <option value="list">
-                                📂 세부목록 방식
-                            </option>
+                initSwipe(
+                    card,
+                    todo.id
+                );
+            }
 
-                        </select>
+        }, 0);
 
-
-                        <input
-                            type="text"
-                            id="subInput-${todo.id}"
-                            placeholder="세부 항목 입력..."
-                        >
-
-
-                        <input
-                            type="date"
-                            id="subDate-${todo.id}"
-                        >
-
-
-                        <button
-                            onclick="
-                                addSubtask(
-                                    ${todo.id}
-                                )
-                            "
-                        >
-                            추가
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `;
-
-
-            setTimeout(
-                () => {
-
-                    renderSubtasksUI(
-                        todo.id
-                    );
-
-                },
-                0
-            );
-
-        }
-
-
-        return wrapper;
 
     }
 
+    /* 프로젝트 방식 */
 
-    /* =========================
-       전체 렌더링
-       ========================= */
+    else {
 
-    function render() {
-
-        const todoList =
-            document.getElementById(
-                'todoList'
-            );
-
-        const todayTaskList =
-            document.getElementById(
-                'todayTaskList'
-            );
-
-        const commissionList =
-            document.getElementById(
-                'commissionList'
-            );
-
-        const homeworkList =
-            document.getElementById(
-                'homeworkList'
-            );
-
-        const dueAlertList =
-            document.getElementById(
-                'dueAlertList'
-            );
+        wrapper.className =
+            'todo-card-standalone';
 
 
-        const dueAlertSection =
-            document.getElementById(
-                'dueAlertSection'
-            );
-
-        const todayTaskSection =
-            document.getElementById(
-                'todayTaskSection'
-            );
-
-        const commissionSection =
-            document.getElementById(
-                'commissionSection'
-            );
-
-        const homeworkSection =
-            document.getElementById(
-                'homeworkSection'
-            );
-
-        const mainSectionTitle =
-            document.getElementById(
-                'mainSectionTitle'
-            );
+        const progress =
+            calculateTodoProgress(todo);
 
 
-        const todayStr =
-            getTodayString();
+        wrapper.innerHTML = `
 
+            <div class="todo-header">
 
-        todoList.innerHTML = '';
-        todayTaskList.innerHTML = '';
-        commissionList.innerHTML = '';
-        homeworkList.innerHTML = '';
-        dueAlertList.innerHTML = '';
+                <div class="todo-title">
 
+                    <span>
+                        📂 ${escapeHTML(todo.title)}
+                    </span>
 
-        let alertCount = 0;
-        let todayTaskCount = 0;
-        let commissionCount = 0;
-        let homeworkCount = 0;
+                    ${
+                        todo.dueDate
+                            ? `
+                                <span class="due-date">
+                                    📅 ${todo.dueDate}
+                                </span>
+                              `
+                            : ''
+                    }
 
+                </div>
 
-        todos.forEach(
-            todo => {
+                <div>
 
-                if (
-                    todo.dueDate &&
-                    todo.dueDate <= todayStr
-                ) {
-
-                    alertCount++;
-
-
-                    const isPast =
-                        todo.dueDate <
-                        todayStr;
-
-
-                    const item =
-                        document.createElement(
-                            'div'
-                        );
-
-
-                    item.style.fontSize =
-                        '0.9rem';
-
-                    item.style.marginBottom =
-                        '6px';
-
-                    item.style.color =
-                        isPast
-                            ? '#b91c1c'
-                            : '#9f1239';
-
-
-                    item.innerHTML = `
-                        📌
-                        <strong>
-                            ${todo.title}
-                        </strong>
-
-                        <span
-                            style="
-                                font-size:0.8rem;
-                                opacity:0.85;
-                            "
-                        >
-                            (
-                            ${
-                                isPast
-                                    ? '지남: '
-                                    : ''
-                            }
-                            ${todo.dueDate}
+                    <button
+                        class="btn-action"
+                        onclick="
+                            openModal(
+                                ${todo.id}
                             )
-                        </span>
-                    `;
+                        ">
+                        수정
+                    </button>
+
+                    <button
+                        class="btn-delete"
+                        onclick="
+                            openDeleteModal(
+                                'todo',
+                                ${todo.id}
+                            )
+                        ">
+                        삭제
+                    </button>
+
+                </div>
+
+            </div>
 
 
-                    dueAlertList.appendChild(
-                        item
-                    );
+            <div class="progress-container">
 
-                }
+                <div class="progress-bar-bg">
 
+                    <div
+                        class="progress-bar-fill"
+                        id="bar-${todo.id}"
+                        style="
+                            width:${progress}%;
+                        ">
+                    </div>
 
-                if (
-                    todo.type === 'project'
-                ) {
+                </div>
 
-                    todo.subtasks.forEach(
-                        sub => {
+                <div class="progress-text">
 
-                            if (
-                                sub.type !==
-                                    'list' &&
-                                sub.dueDate &&
-                                sub.dueDate <=
-                                    todayStr &&
-                                !sub.completed
-                            ) {
+                    진행도:
 
-                                alertCount++;
+                    <strong class="percent-val">
+                        <span id="percent-${todo.id}">
+                            ${progress}
+                        </span>%
+                    </strong>
 
+                </div>
 
-                                const isPast =
-                                    sub.dueDate <
-                                    todayStr;
+            </div>
 
 
-                                const item =
-                                    document.createElement(
-                                        'div'
-                                    );
+            <div class="subtasks-list">
+
+                <div
+                    id="sublist-${todo.id}">
+                </div>
 
 
-                                item.style.fontSize =
-                                    '0.9rem';
+                <div class="subtask-input-group">
 
-                                item.style.marginBottom =
-                                    '6px';
+                    <select
+                        id="subType-${todo.id}"
+                        onchange="
+                            handleSubTypeChange(
+                                ${todo.id}
+                            )
+                        ">
 
-                                item.style.color =
-                                    isPast
-                                        ? '#b91c1c'
-                                        : '#9f1239';
+                        <option value="simple">
+                            일반 항목
+                        </option>
 
+                        <option value="list">
+                            📂 세부목록 방식
+                        </option>
 
-                                item.innerHTML = `
-                                    📌
-                                    <strong>
-                                        ${sub.text}
-                                    </strong>
-
-                                    <span
-                                        style="
-                                            font-size:0.8rem;
-                                            opacity:0.85;
-                                        "
-                                    >
-                                        (
-                                        ${todo.title}
-                                        -
-                                        ${
-                                            isPast
-                                                ? '지남: '
-                                                : ''
-                                        }
-                                        ${sub.dueDate}
-                                        )
-                                    </span>
-                                `;
+                    </select>
 
 
-                                dueAlertList.appendChild(
-                                    item
-                                );
-
-                            }
-
-                        }
-                    );
-
-                }
+                    <input
+                        type="text"
+                        id="subInput-${todo.id}"
+                        placeholder="세부 항목 입력..."
+                    >
 
 
-                const cardElement =
-                    createCardElement(
-                        todo
-                    );
+                    <input
+                        type="date"
+                        id="subDate-${todo.id}"
+                    >
 
 
-                if (
-                    todo.category ===
-                    'today'
-                ) {
+                    <button
+                        onclick="
+                            addSubtask(
+                                ${todo.id}
+                            )
+                        ">
+                        추가
+                    </button>
 
-                    todayTaskList.appendChild(
-                        cardElement
-                    );
+                </div>
 
-                    todayTaskCount++;
-
-                }
-
-                else if (
-                    todo.category ===
-                    'commission'
-                ) {
-
-                    commissionList.appendChild(
-                        cardElement
-                    );
-
-                    commissionCount++;
-
-                }
-
-                else if (
-                    todo.category ===
-                    'homework'
-                ) {
-
-                    homeworkList.appendChild(
-                        cardElement
-                    );
-
-                    homeworkCount++;
-
-                }
-
-                else {
-
-                    todoList.appendChild(
-                        cardElement
-                    );
-
-                }
-
-            }
-        );
+            </div>
+        `;
 
 
-        dueAlertSection.style.display =
-            alertCount > 0
-                ? 'block'
-                : 'none';
+        setTimeout(() => {
+
+            renderSubtasksUI(
+                todo.id
+            );
+
+        }, 0);
+    }
 
 
-        todayTaskSection.style.display =
-            todayTaskCount > 0
-                ? 'block'
-                : 'none';
+    return wrapper;
+}
 
 
-        commissionSection.style.display =
-            commissionCount > 0
-                ? 'block'
-                : 'none';
+/* =====================================================
+   스와이프
+===================================================== */
+
+function initSwipe(cardEl, id) {
+
+    let startX = 0;
+    let currentX = 0;
+    let isSwiping = false;
 
 
-        homeworkSection.style.display =
-            homeworkCount > 0
-                ? 'block'
-                : 'none';
+    const onStart = e => {
+
+        startX =
+            e.touches
+                ? e.touches[0].clientX
+                : e.clientX;
+
+        isSwiping = true;
+
+        cardEl.style.transition =
+            'none';
+    };
+
+
+    const onMove = e => {
+
+        if (!isSwiping) return;
+
+
+        const x =
+            e.touches
+                ? e.touches[0].clientX
+                : e.clientX;
+
+
+        currentX =
+            x - startX;
+
+
+        if (currentX > 0) {
+
+            cardEl.style.transform =
+                `translateX(${currentX}px)`;
+        }
+    };
+
+
+    const onEnd = () => {
+
+        if (!isSwiping) return;
+
+        isSwiping = false;
+
+        cardEl.style.transition =
+            'transform 0.25s ease';
 
 
         if (
-            todayTaskCount > 0 ||
-            commissionCount > 0 ||
-            homeworkCount > 0
+            currentX >
+            cardEl.offsetWidth * 0.4
         ) {
 
-            mainSectionTitle.style.display =
-                'block';
+            cardEl.style.transform =
+                `translateX(${
+                    cardEl.offsetWidth + 50
+                }px)`;
+
+
+            setTimeout(() => {
+
+                todos =
+                    todos.filter(
+                        t => t.id !== id
+                    );
+
+                saveData();
+
+                render();
+
+                renderCalendar();
+
+            }, 200);
+
+
+        } else {
+
+            cardEl.style.transform =
+                'translateX(0px)';
+        }
+
+
+        currentX = 0;
+    };
+
+
+    cardEl.addEventListener(
+        'touchstart',
+        onStart
+    );
+
+    cardEl.addEventListener(
+        'touchmove',
+        onMove
+    );
+
+    cardEl.addEventListener(
+        'touchend',
+        onEnd
+    );
+
+
+    cardEl.addEventListener(
+        'mousedown',
+        onStart
+    );
+
+    window.addEventListener(
+        'mousemove',
+        onMove
+    );
+
+    window.addEventListener(
+        'mouseup',
+        onEnd
+    );
+}
+
+
+/* =====================================================
+   전체 렌더링
+===================================================== */
+
+function render() {
+
+    const todoList =
+        document.getElementById(
+            'todoList'
+        );
+
+    const todayTaskList =
+        document.getElementById(
+            'todayTaskList'
+        );
+
+    const commissionList =
+        document.getElementById(
+            'commissionList'
+        );
+
+    const homeworkList =
+        document.getElementById(
+            'homeworkList'
+        );
+
+    const dueAlertList =
+        document.getElementById(
+            'dueAlertList'
+        );
+
+
+    const dueAlertSection =
+        document.getElementById(
+            'dueAlertSection'
+        );
+
+    const todaySection =
+        document.getElementById(
+            'todayTaskSection'
+        );
+
+    const commissionSection =
+        document.getElementById(
+            'commissionSection'
+        );
+
+    const homeworkSection =
+        document.getElementById(
+            'homeworkSection'
+        );
+
+    const mainTitle =
+        document.getElementById(
+            'mainSectionTitle'
+        );
+
+
+    const todayStr =
+        getTodayString();
+
+
+    todoList.innerHTML = '';
+    todayTaskList.innerHTML = '';
+    commissionList.innerHTML = '';
+    homeworkList.innerHTML = '';
+    dueAlertList.innerHTML = '';
+
+
+    let alertCount = 0;
+    let todayCount = 0;
+    let commissionCount = 0;
+    let homeworkCount = 0;
+
+
+    todos.forEach(todo => {
+
+        /* 메인 마감일 */
+
+        if (
+            todo.dueDate &&
+            todo.dueDate <= todayStr
+        ) {
+
+            alertCount++;
+
+            const isPast =
+                todo.dueDate < todayStr;
+
+
+            const item =
+                document.createElement(
+                    'div'
+                );
+
+            item.style.marginBottom =
+                '6px';
+
+            item.style.fontSize =
+                '0.9rem';
+
+            item.style.color =
+                isPast
+                    ? '#b91c1c'
+                    : '#9f1239';
+
+
+            item.innerHTML = `
+                📌
+                <strong>
+                    ${escapeHTML(todo.title)}
+                </strong>
+
+                <span style="
+                    font-size:0.8rem;
+                    opacity:0.85;
+                ">
+                    (
+                    ${
+                        isPast
+                            ? '지남: '
+                            : ''
+                    }
+                    ${todo.dueDate}
+                    )
+                </span>
+            `;
+
+
+            dueAlertList.appendChild(
+                item
+            );
+        }
+
+
+        /* 세부항목 마감일 */
+
+        if (
+            todo.type === 'project' &&
+            todo.subtasks
+        ) {
+
+            todo.subtasks.forEach(
+                sub => {
+
+                    if (
+                        sub.type !== 'list' &&
+                        sub.dueDate &&
+                        sub.dueDate <= todayStr &&
+                        !sub.completed
+                    ) {
+
+                        alertCount++;
+
+
+                        const isPast =
+                            sub.dueDate <
+                            todayStr;
+
+
+                        const item =
+                            document.createElement(
+                                'div'
+                            );
+
+
+                        item.style.fontSize =
+                            '0.9rem';
+
+                        item.style.marginBottom =
+                            '6px';
+
+                        item.style.color =
+                            isPast
+                                ? '#b91c1c'
+                                : '#9f1239';
+
+
+                        item.innerHTML = `
+                            📌
+                            <strong>
+                                ${escapeHTML(sub.text)}
+                            </strong>
+
+                            <span style="
+                                font-size:0.8rem;
+                                opacity:0.85;
+                            ">
+                                (
+                                ${escapeHTML(todo.title)}
+                                -
+                                ${
+                                    isPast
+                                        ? '지남: '
+                                        : ''
+                                }
+                                ${sub.dueDate}
+                                )
+                            </span>
+                        `;
+
+
+                        dueAlertList.appendChild(
+                            item
+                        );
+                    }
+                }
+            );
+        }
+
+
+        const card =
+            createCardElement(todo);
+
+
+        if (
+            todo.category ===
+            'today'
+        ) {
+
+            todayTaskList.appendChild(
+                card
+            );
+
+            todayCount++;
+
+        }
+
+        else if (
+            todo.category ===
+            'commission'
+        ) {
+
+            commissionList.appendChild(
+                card
+            );
+
+            commissionCount++;
+
+        }
+
+        else if (
+            todo.category ===
+            'homework'
+        ) {
+
+            homeworkList.appendChild(
+                card
+            );
+
+            homeworkCount++;
 
         }
 
         else {
 
-            mainSectionTitle.style.display =
-                'none';
-
+            todoList.appendChild(
+                card
+            );
         }
+
+    });
+
+
+    dueAlertSection.style.display =
+        alertCount > 0
+            ? 'block'
+            : 'none';
+
+
+    todaySection.style.display =
+        todayCount > 0
+            ? 'block'
+            : 'none';
+
+
+    commissionSection.style.display =
+        commissionCount > 0
+            ? 'block'
+            : 'none';
+
+
+    homeworkSection.style.display =
+        homeworkCount > 0
+            ? 'block'
+            : 'none';
+
+
+    mainTitle.style.display =
+        (
+            todayCount > 0 ||
+            commissionCount > 0 ||
+            homeworkCount > 0
+        )
+            ? 'block'
+            : 'none';
+}
+
+
+/* =====================================================
+   달력
+===================================================== */
+
+let calendarYear =
+    new Date().getFullYear();
+
+let calendarMonth =
+    new Date().getMonth();
+
+let selectedCalendarDate =
+    getTodayString();
+
+
+function openCalendarModal() {
+
+    document.getElementById(
+        'calendarModal'
+    ).style.display = 'flex';
+
+
+    calendarYear =
+        new Date().getFullYear();
+
+    calendarMonth =
+        new Date().getMonth();
+
+
+    renderCalendar();
+
+    showCalendarDate(
+        selectedCalendarDate
+    );
+}
+
+
+function closeCalendarModal() {
+
+    document.getElementById(
+        'calendarModal'
+    ).style.display = 'none';
+}
+
+
+function changeCalendarMonth(
+    amount
+) {
+
+    calendarMonth += amount;
+
+
+    if (calendarMonth < 0) {
+
+        calendarMonth = 11;
+        calendarYear--;
 
     }
 
+    else if (calendarMonth > 11) {
 
-    /* =========================
-       시작
-       ========================= */
-
-    render();
+        calendarMonth = 0;
+        calendarYear++;
+    }
 
 
-    /* =========================
-       메모 접힘 상태 복원
-       ========================= */
+    renderCalendar();
+}
 
-    if (
-        localStorage.getItem(
-            'memoCollapsed'
-        ) === 'true'
+
+/* =====================================================
+   달력에 표시할 모든 일정
+===================================================== */
+
+function getCalendarEvents() {
+
+    const events = [];
+
+
+    todos.forEach(todo => {
+
+        if (todo.dueDate) {
+
+            events.push({
+
+                id: todo.id,
+
+                type: 'todo',
+
+                title: todo.title,
+
+                dueDate: todo.dueDate,
+
+                completed: false,
+
+                todoId: todo.id
+
+            });
+        }
+
+
+        if (
+            todo.type === 'project' &&
+            todo.subtasks
+        ) {
+
+            todo.subtasks.forEach(
+                sub => {
+
+                    if (
+                        sub.type !== 'list' &&
+                        sub.dueDate
+                    ) {
+
+                        events.push({
+
+                            id: sub.id,
+
+                            type: 'subtask',
+
+                            title: sub.text,
+
+                            dueDate:
+                                sub.dueDate,
+
+                            completed:
+                                !!sub.completed,
+
+                            todoId:
+                                todo.id
+
+                        });
+                    }
+                }
+            );
+        }
+
+    });
+
+
+    return events;
+}
+
+
+/* =====================================================
+   달력 렌더링
+===================================================== */
+
+function renderCalendar() {
+
+    const grid =
+        document.getElementById(
+            'calendarGrid'
+        );
+
+    const title =
+        document.getElementById(
+            'calendarTitle'
+        );
+
+
+    grid.innerHTML = '';
+
+
+    title.textContent =
+        `${calendarYear}년 ${
+            calendarMonth + 1
+        }월`;
+
+
+    const dayNames =
+        [
+            '일',
+            '월',
+            '화',
+            '수',
+            '목',
+            '금',
+            '토'
+        ];
+
+
+    dayNames.forEach(day => {
+
+        const el =
+            document.createElement(
+                'div'
+            );
+
+        el.className =
+            'calendar-day-name';
+
+        el.textContent =
+            day;
+
+        grid.appendChild(el);
+    });
+
+
+    const firstDay =
+        new Date(
+            calendarYear,
+            calendarMonth,
+            1
+        ).getDay();
+
+
+    const daysInMonth =
+        new Date(
+            calendarYear,
+            calendarMonth + 1,
+            0
+        ).getDate();
+
+
+    const events =
+        getCalendarEvents();
+
+
+    for (
+        let i = 0;
+        i < firstDay;
+        i++
     ) {
 
-        document
-            .getElementById(
-                'memoBody'
+        grid.appendChild(
+            document.createElement(
+                'div'
             )
-            .classList.add(
-                'collapsed'
+        );
+    }
+
+
+    for (
+        let day = 1;
+        day <= daysInMonth;
+        day++
+    ) {
+
+        const dateKey =
+            `${calendarYear}-${
+                String(
+                    calendarMonth + 1
+                ).padStart(2, '0')
+            }-${
+                String(day).padStart(2, '0')
+            }`;
+
+
+        const cell =
+            document.createElement(
+                'div'
+            );
+
+        cell.className =
+            'calendar-cell';
+
+
+        if (
+            dateKey ===
+            selectedCalendarDate
+        ) {
+
+            cell.classList.add(
+                'selected'
+            );
+        }
+
+
+        if (
+            dateKey ===
+            getTodayString()
+        ) {
+
+            cell.classList.add(
+                'today'
+            );
+        }
+
+
+        const number =
+            document.createElement(
+                'div'
+            );
+
+        number.className =
+            'calendar-number';
+
+        number.textContent =
+            day;
+
+        cell.appendChild(
+            number
+        );
+
+
+        const dayEvents =
+            events.filter(
+                e =>
+                    e.dueDate ===
+                    dateKey
             );
 
 
-        document
-            .getElementById(
-                'memoToggleBtn'
-            )
-            .textContent =
-                '펼치기 ▼';
+        dayEvents.forEach(event => {
 
+            const badge =
+                document.createElement(
+                    'div'
+                );
+
+            badge.className =
+                'calendar-event';
+
+
+            if (event.completed) {
+
+                badge.classList.add(
+                    'completed'
+                );
+            }
+
+
+            badge.textContent =
+                event.title;
+
+
+            cell.appendChild(
+                badge
+            );
+        });
+
+
+        cell.onclick = () => {
+
+            selectedCalendarDate =
+                dateKey;
+
+            renderCalendar();
+
+            showCalendarDate(
+                dateKey
+            );
+        };
+
+
+        grid.appendChild(
+            cell
+        );
     }
+}
+
+
+/* =====================================================
+   특정 날짜 상세
+===================================================== */
+
+function showCalendarDate(
+    dateStr
+) {
+
+    selectedCalendarDate =
+        dateStr;
+
+
+    const title =
+        document.getElementById(
+            'calendarDetailTitle'
+        );
+
+    const list =
+        document.getElementById(
+            'calendarDetailList'
+        );
+
+
+    title.textContent =
+        `${dateStr} 마감 일정`;
+
+
+    list.innerHTML = '';
+
+
+    const events =
+        getCalendarEvents()
+            .filter(
+                e =>
+                    e.dueDate ===
+                    dateStr
+            );
+
+
+    if (events.length === 0) {
+
+        list.innerHTML = `
+            <div class="calendar-empty">
+                이 날짜에 마감인 일정이 없습니다.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    events.forEach(event => {
+
+        const item =
+            document.createElement(
+                'div'
+            );
+
+        item.className =
+            'calendar-detail-item';
+
+
+        const todo =
+            todos.find(
+                t => t.id === event.todoId
+            );
+
+
+        const completed =
+            event.type === 'todo'
+                ? false
+                : event.completed;
+
+
+        item.innerHTML = `
+
+            <div class="calendar-detail-left">
+
+                <input
+                    type="checkbox"
+                    ${completed ? 'checked' : ''}
+                >
+
+                <span style="${
+                    completed
+                        ? 'text-decoration:line-through;color:#94a3b8;'
+                        : ''
+                }">
+
+                    ${escapeHTML(event.title)}
+
+                    ${
+                        event.type === 'subtask'
+                            ? `
+                                <small style="
+                                    color:#94a3b8;
+                                ">
+                                    (${escapeHTML(
+                                        todo
+                                            ? todo.title
+                                            : ''
+                                    )})
+                                </small>
+                              `
+                            : ''
+                    }
+
+                </span>
+
+            </div>
+
+
+            <div class="calendar-detail-buttons">
+
+                <button
+                    class="btn-action">
+                    수정
+                </button>
+
+                <button
+                    class="btn-delete">
+                    삭제
+                </button>
+
+            </div>
+        `;
+
+
+        const checkbox =
+            item.querySelector(
+                'input'
+            );
+
+
+        checkbox.onchange = () => {
+
+            if (
+                event.type === 'todo'
+            ) {
+
+                /*
+                 * 일반 할 일은
+                 * 달력에서 체크하면 바로 삭제되는
+                 * 대신 완료 상태를 별도로 저장하지 않기 때문에
+                 * 완료 처리 후 일정이 사라지는 방식으로 처리.
+                 */
+
+                todos =
+                    todos.filter(
+                        t =>
+                            t.id !==
+                            event.todoId
+                    );
+
+            }
+
+            else {
+
+                const parent =
+                    todos.find(
+                        t =>
+                            t.id ===
+                            event.todoId
+                    );
+
+
+                if (parent) {
+
+                    const sub =
+                        parent.subtasks.find(
+                            s =>
+                                s.id ===
+                                event.id
+                        );
+
+
+                    if (sub) {
+
+                        sub.completed =
+                            checkbox.checked;
+                    }
+                }
+            }
+
+
+            saveData();
+
+            render();
+
+            renderCalendar();
+
+            showCalendarDate(
+                selectedCalendarDate
+            );
+        };
+
+
+        const buttons =
+            item.querySelectorAll(
+                'button'
+            );
+
+
+        buttons[0].onclick =
+            () => {
+
+                if (
+                    event.type ===
+                    'todo'
+                ) {
+
+                    openModal(
+                        event.todoId
+                    );
+
+                } else {
+
+                    const parent =
+                        todos.find(
+                            t =>
+                                t.id ===
+                                event.todoId
+                        );
+
+
+                    if (!parent) return;
+
+
+                    const sub =
+                        parent.subtasks.find(
+                            s =>
+                                s.id ===
+                                event.id
+                        );
+
+
+                    if (!sub) return;
+
+
+                    const newText =
+                        prompt(
+                            '세부항목 수정:',
+                            sub.text
+                        );
+
+
+                    if (
+                        newText !== null &&
+                        newText.trim()
+                    ) {
+
+                        sub.text =
+                            newText.trim();
+
+                        saveData();
+
+                        render();
+
+                        renderCalendar();
+
+                        showCalendarDate(
+                            selectedCalendarDate
+                        );
+                    }
+                }
+            };
+
+
+        buttons[1].onclick =
+            () => {
+
+                if (
+                    !confirm(
+                        '정말 삭제하시겠습니까?'
+                    )
+                ) return;
+
+
+                if (
+                    event.type ===
+                    'todo'
+                ) {
+
+                    todos =
+                        todos.filter(
+                            t =>
+                                t.id !==
+                                event.todoId
+                        );
+
+                }
+
+                else {
+
+                    const parent =
+                        todos.find(
+                            t =>
+                                t.id ===
+                                event.todoId
+                        );
+
+
+                    if (parent) {
+
+                        parent.subtasks =
+                            parent.subtasks.filter(
+                                s =>
+                                    s.id !==
+                                    event.id
+                            );
+                    }
+                }
+
+
+                saveData();
+
+                render();
+
+                renderCalendar();
+
+                showCalendarDate(
+                    selectedCalendarDate
+                );
+            };
+
+
+        list.appendChild(
+            item
+        );
+    });
+}
+
+
+/* =====================================================
+   초기 실행
+===================================================== */
+
+render();
 
 </script>
 
 </body>
 </html>
-
-
-
