@@ -116,7 +116,7 @@ h1 {
 }
 
 /* =========================
-   상단 달력 버튼
+   상단 달력
 ========================= */
 
 .top-tools {
@@ -479,6 +479,10 @@ h1 {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+.modal-content.wide {
+    max-width: 500px;
+}
+
 .modal-content h3 {
     margin-top: 0;
     margin-bottom: 16px;
@@ -542,6 +546,90 @@ h1 {
 .btn-danger {
     background: var(--danger-color);
     color: white;
+}
+
+/* =========================
+   세부사항 편집용
+========================= */
+
+.edit-item-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+.edit-item-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.edit-item-row input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1.5px solid #bae6fd;
+    border-radius: 9px;
+    background: white;
+    outline: none;
+}
+
+.edit-item-row input[type="date"] {
+    width: 145px;
+    padding: 7px;
+    border: 1.5px solid #bae6fd;
+    border-radius: 9px;
+    background: white;
+}
+
+.edit-item-row button {
+    flex-shrink: 0;
+}
+
+.edit-section {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.edit-section-title {
+    font-weight: 700;
+    margin-bottom: 9px;
+    color: #475569;
+    font-size: .9rem;
+}
+
+.add-edit-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.add-edit-row input[type="text"] {
+    flex: 1;
+    min-width: 130px;
+    padding: 9px;
+    border: 1.5px solid #bae6fd;
+    border-radius: 9px;
+    outline: none;
+}
+
+.add-edit-row input[type="date"] {
+    padding: 8px;
+    border: 1.5px solid #bae6fd;
+    border-radius: 9px;
+    outline: none;
+}
+
+.add-edit-row button {
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 9px;
+    padding: 8px 12px;
+    font-weight: 600;
 }
 
 /* =========================
@@ -701,11 +789,6 @@ h1 {
     font-weight: 700;
     cursor: pointer;
 }
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
 </style>
 </head>
 
@@ -715,19 +798,15 @@ h1 {
 
     <h1>📝 스마트 할 일 관리</h1>
 
-    <!-- 상단 도구 -->
     <div class="top-tools">
         <button class="calendar-open-btn" onclick="openCalendar()">
             📅 마감 달력
         </button>
     </div>
 
-    <!-- 빠른 메모 -->
     <div class="memo-section" id="memoSection">
-
         <div class="memo-header">
             <h2>✏️ 빠른 메모장</h2>
-
             <button class="memo-toggle" id="memoToggle" onclick="toggleMemo()">
                 접기 ▲
             </button>
@@ -740,26 +819,21 @@ h1 {
                 placeholder="자유롭게 메모를 남겨보세요... (자동 저장)"
             ></textarea>
         </div>
-
     </div>
 
-    <!-- 마감 알림 -->
     <div id="dueAlertSection"
          class="due-alert-section"
          style="display:none;">
 
         <h2>🚨 마감 오늘 / 지남!</h2>
-
         <div id="dueAlertList"></div>
 
     </div>
 
-    <!-- 추가 -->
     <button class="add-btn-main" onclick="openModal()">
         + 새 할 일 추가하기
     </button>
 
-    <!-- 오늘 -->
     <div id="todayTaskSection"
          class="category-group"
          style="display:none;">
@@ -772,7 +846,6 @@ h1 {
 
     </div>
 
-    <!-- 커미션 -->
     <div id="commissionSection"
          class="category-group"
          style="display:none;">
@@ -785,7 +858,6 @@ h1 {
 
     </div>
 
-    <!-- 숙제 -->
     <div id="homeworkSection"
          class="category-group"
          style="display:none;">
@@ -798,7 +870,6 @@ h1 {
 
     </div>
 
-    <!-- 일반 -->
     <div id="mainSection" class="category-group">
 
         <div
@@ -817,7 +888,7 @@ h1 {
 
 
 <!-- =========================
-     추가 / 수정 모달
+     할 일 추가 / 수정
 ========================= -->
 
 <div id="todoModal" class="modal">
@@ -886,6 +957,120 @@ h1 {
                     id="saveTodoBtn"
                     onclick="addTodo()">
                 추가하기
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     세부사항 편집
+========================= -->
+
+<div id="subtaskEditModal" class="modal">
+
+    <div class="modal-content wide">
+
+        <h3 id="subtaskEditTitle">
+            ✏️ 세부사항 수정
+        </h3>
+
+        <div class="form-group">
+
+            <label>세부사항 종류</label>
+
+            <select
+                id="editSubtaskType"
+                onchange="handleEditSubtaskTypeChange()"
+            >
+
+                <option value="simple">
+                    일반 항목
+                </option>
+
+                <option value="list">
+                    📂 세부목록 방식
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="form-group">
+
+            <label>제목</label>
+
+            <input
+                type="text"
+                id="editSubtaskText"
+                placeholder="세부사항 제목"
+            >
+
+        </div>
+
+        <div
+            class="form-group"
+            id="editSubtaskDateGroup"
+        >
+
+            <label>마감기한 (선택)</label>
+
+            <input
+                type="date"
+                id="editSubtaskDate"
+            >
+
+        </div>
+
+
+        <!-- 목록형일 때만 표시 -->
+
+        <div
+            id="editSubtaskItemsSection"
+            class="edit-section"
+            style="display:none;"
+        >
+
+            <div class="edit-section-title">
+                📂 목록 안의 항목
+            </div>
+
+            <div id="editSubtaskItems"></div>
+
+            <div class="add-edit-row">
+
+                <input
+                    type="text"
+                    id="newEditItemText"
+                    placeholder="새 항목 입력..."
+                >
+
+                <button onclick="addEditSubtaskItem()">
+                    + 추가
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-btns">
+
+            <button
+                class="btn-secondary"
+                onclick="closeSubtaskEditModal()"
+            >
+                취소
+            </button>
+
+            <button
+                class="btn-primary"
+                onclick="saveSubtaskEdit()"
+            >
+                수정 완료
             </button>
 
         </div>
@@ -1008,6 +1193,9 @@ let todos =
 let deleteTarget = null;
 let editingTodoId = null;
 
+/* 세부사항 편집 대상 */
+let editingSubtaskInfo = null;
+
 
 /* =========================================================
    날짜
@@ -1027,7 +1215,7 @@ function getTodayString() {
 
 
 /* =========================================================
-   날짜 변경 처리
+   날짜 변경
 ========================================================= */
 
 function checkDateChangeAndCleanup() {
@@ -1055,6 +1243,7 @@ function checkDateChangeAndCleanup() {
         'lastVisitedDate',
         todayStr
     );
+
 }
 
 checkDateChangeAndCleanup();
@@ -1143,7 +1332,7 @@ function saveData() {
 
 
 /* =========================================================
-   분류 변경
+   분류
 ========================================================= */
 
 function handleCategoryChange() {
@@ -1173,7 +1362,7 @@ function handleCategoryChange() {
 
 
 /* =========================================================
-   추가 / 수정 모달
+   할 일 추가 / 수정
 ========================================================= */
 
 function openModal(editId = null) {
@@ -1181,14 +1370,10 @@ function openModal(editId = null) {
     editingTodoId = editId;
 
     const modalTitle =
-        document.getElementById(
-            'modalTitle'
-        );
+        document.getElementById('modalTitle');
 
     const saveBtn =
-        document.getElementById(
-            'saveTodoBtn'
-        );
+        document.getElementById('saveTodoBtn');
 
     if (editId) {
 
@@ -1368,13 +1553,21 @@ function updateTodo() {
             'todoCategory'
         ).value;
 
-    todo.category =
-        category;
-
-    todo.type =
+    const newType =
         document.getElementById(
             'todoType'
         ).value;
+
+    todo.category =
+        category;
+
+    /*
+       기존 프로젝트의 세부사항은
+       프로젝트 상태를 유지하는 동안 그대로 보존.
+       simple -> project로 변경하면 subtasks가 유지된다.
+    */
+    todo.type =
+        newType;
 
     todo.title =
         title;
@@ -1387,6 +1580,9 @@ function updateTodo() {
                     'todoDueDate'
                 ).value || null
             );
+
+    if (!todo.subtasks)
+        todo.subtasks = [];
 
     saveData();
 
@@ -1528,7 +1724,7 @@ function executeDelete() {
 
 
 /* =========================================================
-   진행률 계산
+   진행률
 ========================================================= */
 
 function calculateTodoProgress(todo) {
@@ -1544,7 +1740,6 @@ function calculateTodoProgress(todo) {
     }
 
     let totalPoints = 0;
-
     let completedPoints = 0;
 
 
@@ -1564,8 +1759,7 @@ function calculateTodoProgress(todo) {
 
             } else {
 
-                totalPoints +=
-                    items.length;
+                totalPoints += items.length;
 
                 completedPoints +=
                     items.filter(
@@ -1636,10 +1830,10 @@ function updateProgressUI(todoId) {
 
 
 /* =========================================================
-   세부목록 수정
+   ★ 세부사항 편집
 ========================================================= */
 
-function editSubtaskText(
+function openSubtaskEditModal(
     todoId,
     subtaskId
 ) {
@@ -1649,94 +1843,477 @@ function editSubtaskText(
             t => t.id === todoId
         );
 
+    if (!todo) return;
+
     const subtask =
-        todo
-            ? todo.subtasks.find(
-                s => s.id === subtaskId
-            )
-            : null;
+        todo.subtasks.find(
+            s => s.id === subtaskId
+        );
 
     if (!subtask) return;
 
-    const newText =
-        prompt(
-            '세부목록 제목 수정:',
-            subtask.text
+    editingSubtaskInfo = {
+        todoId,
+        subtaskId
+    };
+
+    document.getElementById(
+        'editSubtaskType'
+    ).value =
+        subtask.type || 'simple';
+
+    document.getElementById(
+        'editSubtaskText'
+    ).value =
+        subtask.text || '';
+
+    document.getElementById(
+        'editSubtaskDate'
+    ).value =
+        subtask.dueDate || '';
+
+    renderEditSubtaskItems();
+
+    handleEditSubtaskTypeChange();
+
+    document.getElementById(
+        'subtaskEditModal'
+    ).style.display = 'flex';
+
+}
+
+
+function closeSubtaskEditModal() {
+
+    document.getElementById(
+        'subtaskEditModal'
+    ).style.display = 'none';
+
+    editingSubtaskInfo = null;
+
+}
+
+
+/*
+   종류에 따라 마감일 / 목록 편집 표시
+*/
+function handleEditSubtaskTypeChange() {
+
+    const type =
+        document.getElementById(
+            'editSubtaskType'
+        ).value;
+
+    const dateGroup =
+        document.getElementById(
+            'editSubtaskDateGroup'
         );
 
-    if (
-        newText !== null &&
-        newText.trim() !== ''
-    ) {
+    const itemsSection =
+        document.getElementById(
+            'editSubtaskItemsSection'
+        );
 
-        subtask.text =
-            newText.trim();
+    if (type === 'list') {
 
-        saveData();
+        dateGroup.style.display =
+            'none';
 
-        renderSubtasksUI(todoId);
+        itemsSection.style.display =
+            'block';
+
+    } else {
+
+        dateGroup.style.display =
+            'block';
+
+        itemsSection.style.display =
+            'none';
 
     }
 
 }
 
 
-function editNestedItemText(
-    todoId,
-    subtaskId,
-    nestedId
-) {
+/*
+   목록형 세부사항의 항목 편집 화면
+*/
+function renderEditSubtaskItems() {
+
+    const box =
+        document.getElementById(
+            'editSubtaskItems'
+        );
+
+    if (!editingSubtaskInfo) return;
 
     const todo =
         todos.find(
-            t => t.id === todoId
+            t => t.id === editingSubtaskInfo.todoId
         );
 
     const subtask =
         todo
             ? todo.subtasks.find(
-                s => s.id === subtaskId
+                s =>
+                    s.id ===
+                    editingSubtaskInfo.subtaskId
             )
             : null;
 
-    const nestedItem =
-        subtask &&
-        subtask.items
-            ? subtask.items.find(
-                n => n.id === nestedId
-            )
-            : null;
+    if (!subtask) return;
 
-    if (!nestedItem) return;
+    const items =
+        subtask.items || [];
 
-    const newText =
-        prompt(
-            '하위 세부항목 수정:',
-            nestedItem.text
-        );
+    if (items.length === 0) {
 
-    if (
-        newText !== null &&
-        newText.trim() !== ''
-    ) {
+        box.innerHTML = `
+            <div style="
+                color:#94a3b8;
+                font-size:.85rem;
+                padding:6px 0 10px;
+            ">
+                아직 목록 항목이 없습니다.
+            </div>
+        `;
 
-        nestedItem.text =
-            newText.trim();
-
-        saveData();
-
-        renderSubtasksUI(todoId);
+        return;
 
     }
+
+
+    box.innerHTML =
+        items.map(item => `
+
+            <div class="edit-item-box">
+
+                <div class="edit-item-row">
+
+                    <input
+                        type="checkbox"
+                        ${item.completed ? 'checked' : ''}
+                        onchange="
+                            toggleEditItemCompleted(
+                                ${item.id}
+                            )
+                        "
+                    >
+
+                    <input
+                        type="text"
+                        id="edit-item-text-${item.id}"
+                        value="${escapeHTML(item.text || '')}"
+                        placeholder="항목 이름"
+                    >
+
+                    <button
+                        class="btn-delete"
+                        onclick="
+                            deleteEditSubtaskItem(
+                                ${item.id}
+                            )
+                        "
+                    >
+                        ✕
+                    </button>
+
+                </div>
+
+            </div>
+
+        `).join('');
+
+}
+
+
+/*
+   편집 중인 목록 항목 완료 상태 변경
+*/
+function toggleEditItemCompleted(itemId) {
+
+    if (!editingSubtaskInfo) return;
+
+    const todo =
+        todos.find(
+            t => t.id === editingSubtaskInfo.todoId
+        );
+
+    if (!todo) return;
+
+    const subtask =
+        todo.subtasks.find(
+            s =>
+                s.id ===
+                editingSubtaskInfo.subtaskId
+        );
+
+    if (!subtask || !subtask.items)
+        return;
+
+    const item =
+        subtask.items.find(
+            i => i.id === itemId
+        );
+
+    if (!item) return;
+
+    item.completed =
+        !item.completed;
+
+    saveData();
+
+    renderEditSubtaskItems();
+
+}
+
+
+/*
+   편집 중 목록 항목 삭제
+*/
+function deleteEditSubtaskItem(itemId) {
+
+    if (!editingSubtaskInfo) return;
+
+    const todo =
+        todos.find(
+            t => t.id === editingSubtaskInfo.todoId
+        );
+
+    if (!todo) return;
+
+    const subtask =
+        todo.subtasks.find(
+            s =>
+                s.id ===
+                editingSubtaskInfo.subtaskId
+        );
+
+    if (!subtask || !subtask.items)
+        return;
+
+    subtask.items =
+        subtask.items.filter(
+            i => i.id !== itemId
+        );
+
+    saveData();
+
+    renderEditSubtaskItems();
+
+}
+
+
+/*
+   편집 중인 목록에 새 항목 추가
+*/
+function addEditSubtaskItem() {
+
+    if (!editingSubtaskInfo) return;
+
+    const input =
+        document.getElementById(
+            'newEditItemText'
+        );
+
+    const text =
+        input.value.trim();
+
+    if (!text) return;
+
+    const todo =
+        todos.find(
+            t => t.id === editingSubtaskInfo.todoId
+        );
+
+    if (!todo) return;
+
+    const subtask =
+        todo.subtasks.find(
+            s =>
+                s.id ===
+                editingSubtaskInfo.subtaskId
+        );
+
+    if (!subtask) return;
+
+    if (!subtask.items)
+        subtask.items = [];
+
+    subtask.items.push({
+
+        id:
+            Date.now() +
+            Math.floor(Math.random() * 1000),
+
+        text,
+
+        completed: false
+
+    });
+
+    input.value = '';
+
+    saveData();
+
+    renderEditSubtaskItems();
+
+}
+
+
+/*
+   세부사항 수정 완료
+*/
+function saveSubtaskEdit() {
+
+    if (!editingSubtaskInfo) return;
+
+    const todo =
+        todos.find(
+            t => t.id === editingSubtaskInfo.todoId
+        );
+
+    if (!todo) return;
+
+    const subtask =
+        todo.subtasks.find(
+            s =>
+                s.id ===
+                editingSubtaskInfo.subtaskId
+        );
+
+    if (!subtask) return;
+
+
+    const newType =
+        document.getElementById(
+            'editSubtaskType'
+        ).value;
+
+    const newText =
+        document.getElementById(
+            'editSubtaskText'
+        ).value.trim();
+
+    if (!newText) {
+
+        alert('세부사항 제목을 입력해주세요.');
+
+        return;
+
+    }
+
+
+    /*
+       일반 ↔ 목록 변경
+    */
+
+    if (newType === 'list') {
+
+        subtask.type =
+            'list';
+
+        subtask.text =
+            newText;
+
+        /*
+           목록형에는 일반 항목의 마감일을
+           사용하지 않음
+        */
+        subtask.dueDate =
+            null;
+
+        if (!subtask.items)
+            subtask.items = [];
+
+    } else {
+
+        subtask.type =
+            'simple';
+
+        subtask.text =
+            newText;
+
+        subtask.dueDate =
+            document.getElementById(
+                'editSubtaskDate'
+            ).value || null;
+
+        /*
+           일반 항목으로 바꾸면
+           기존 목록 데이터는 삭제하지 않고
+           보존해둔다.
+           다시 목록으로 바꾸면 복구 가능.
+        */
+
+    }
+
+
+    /*
+       목록 편집창에서 입력해 둔 텍스트를
+       실제 데이터에 반영
+    */
+
+    if (
+        subtask.items &&
+        Array.isArray(subtask.items)
+    ) {
+
+        subtask.items.forEach(item => {
+
+            const input =
+                document.getElementById(
+                    `edit-item-text-${item.id}`
+                );
+
+            if (input) {
+
+                const value =
+                    input.value.trim();
+
+                if (value)
+                    item.text = value;
+
+            }
+
+        });
+
+    }
+
+
+    saveData();
+
+    const todoId =
+        editingSubtaskInfo.todoId;
+
+    closeSubtaskEditModal();
+
+    updateProgressUI(todoId);
+
+    renderSubtasksUI(todoId);
+
+    render();
+
+}
+
+
+/*
+   HTML 특수문자 처리
+*/
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 
 }
 
 
 /* =========================================================
    세부목록 UI
-   중요:
-   details의 open 상태를 기억해서
-   체크해도 자동으로 접히지 않게 함
 ========================================================= */
 
 function renderSubtasksUI(todoId) {
@@ -1755,7 +2332,10 @@ function renderSubtasksUI(todoId) {
         return;
 
 
-    /* 현재 열려 있던 목록 기억 */
+    /*
+       현재 열려 있던 목록 기억
+    */
+
     const openStates = {};
 
     subListEl
@@ -1778,7 +2358,7 @@ function renderSubtasksUI(todoId) {
 
 
             /* =====================
-               중첩 목록
+               목록형
             ===================== */
 
             if (sub.type === 'list') {
@@ -1818,6 +2398,7 @@ function renderSubtasksUI(todoId) {
                                 display:flex;
                                 align-items:center;
                                 gap:8px;
+                                min-width:0;
                             ">
 
                                 <input
@@ -1833,7 +2414,7 @@ function renderSubtasksUI(todoId) {
                                 >
 
                                 <span>
-                                    ${n.text}
+                                    ${escapeHTML(n.text)}
                                 </span>
 
                             </div>
@@ -1843,10 +2424,9 @@ function renderSubtasksUI(todoId) {
                                 <button
                                     class="btn-action"
                                     onclick="
-                                        editNestedItemText(
+                                        openSubtaskEditModal(
                                             ${todo.id},
-                                            ${sub.id},
-                                            ${n.id}
+                                            ${sub.id}
                                         )
                                     "
                                 >
@@ -1885,7 +2465,7 @@ function renderSubtasksUI(todoId) {
                         <summary class="nested-summary">
 
                             <span class="nested-summary-title">
-                                📂 ${sub.text}
+                                📂 ${escapeHTML(sub.text)}
                             </span>
 
                             <div
@@ -1911,7 +2491,9 @@ function renderSubtasksUI(todoId) {
                                 <button
                                     class="btn-action"
                                     onclick="
-                                        editSubtaskText(
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        openSubtaskEditModal(
                                             ${todo.id},
                                             ${sub.id}
                                         )
@@ -1935,9 +2517,7 @@ function renderSubtasksUI(todoId) {
 
                                 <input
                                     type="text"
-                                    id="
-                                        nestedInput-${todo.id}-${sub.id}
-                                    "
+                                    id="nestedInput-${todo.id}-${sub.id}"
                                     placeholder="하위 세부항목 입력..."
                                 >
 
@@ -1991,6 +2571,7 @@ function renderSubtasksUI(todoId) {
                         align-items:center;
                         gap:8px;
                         flex-wrap:wrap;
+                        min-width:0;
                     ">
 
                         <input
@@ -2005,7 +2586,7 @@ function renderSubtasksUI(todoId) {
                         >
 
                         <span>
-                            ${sub.text}
+                            ${escapeHTML(sub.text)}
                         </span>
 
                         ${
@@ -2025,7 +2606,7 @@ function renderSubtasksUI(todoId) {
                         <button
                             class="btn-action"
                             onclick="
-                                editSubtaskText(
+                                openSubtaskEditModal(
                                     ${todo.id},
                                     ${sub.id}
                                 )
@@ -2101,7 +2682,9 @@ function addSubtask(todoId) {
 
         todo.subtasks.push({
 
-            id: Date.now(),
+            id:
+                Date.now() +
+                Math.floor(Math.random() * 1000),
 
             type: 'list',
 
@@ -2115,7 +2698,9 @@ function addSubtask(todoId) {
 
         todo.subtasks.push({
 
-            id: Date.now(),
+            id:
+                Date.now() +
+                Math.floor(Math.random() * 1000),
 
             type: 'simple',
 
@@ -2159,6 +2744,8 @@ function addNestedItem(
             `nestedInput-${todoId}-${subtaskId}`
         );
 
+    if (!input) return;
+
     const text =
         input.value.trim();
 
@@ -2184,7 +2771,9 @@ function addNestedItem(
 
     subtask.items.push({
 
-        id: Date.now(),
+        id:
+            Date.now() +
+            Math.floor(Math.random() * 1000),
 
         text,
 
@@ -2274,13 +2863,6 @@ function toggleNestedItem(
 
     updateProgressUI(todoId);
 
-    /*
-       여기서 render()를 하지 않고
-       renderSubtasksUI()만 실행.
-       그래서 전체 카드가 다시 만들어지면서
-       details가 닫히는 문제를 막음.
-    */
-
     renderSubtasksUI(todoId);
 
 }
@@ -2314,7 +2896,7 @@ function handleSubTypeChange(todoId) {
 
 
 /* =========================================================
-   스와이프 완료
+   스와이프
 ========================================================= */
 
 function initSwipe(
@@ -2323,9 +2905,7 @@ function initSwipe(
 ) {
 
     let startX = 0;
-
     let currentX = 0;
-
     let isSwiping = false;
 
 
@@ -2382,9 +2962,7 @@ function initSwipe(
         ) {
 
             cardEl.style.transform =
-                `translateX(
-                    ${cardEl.offsetWidth + 50}px
-                )`;
+                `translateX(${cardEl.offsetWidth + 50}px)`;
 
             setTimeout(() => {
 
@@ -2440,7 +3018,7 @@ function createCardElement(todo) {
 
 
     /* =====================
-       일반 방식
+       일반
     ===================== */
 
     if (todo.type === 'simple') {
@@ -2464,7 +3042,7 @@ function createCardElement(todo) {
                     <div class="todo-title">
 
                         <span>
-                            👉 ${todo.title}
+                            👉 ${escapeHTML(todo.title)}
                         </span>
 
                         ${
@@ -2541,7 +3119,7 @@ function createCardElement(todo) {
 
 
     /* =====================
-       프로젝트 방식
+       프로젝트
     ===================== */
 
     else {
@@ -2560,7 +3138,7 @@ function createCardElement(todo) {
                 <div class="todo-title">
 
                     <span>
-                        📂 ${todo.title}
+                        📂 ${escapeHTML(todo.title)}
                     </span>
 
                     ${
@@ -2631,9 +3209,7 @@ function createCardElement(todo) {
 
             <div class="subtasks-list">
 
-                <div
-                    id="sublist-${todo.id}"
-                ></div>
+                <div id="sublist-${todo.id}"></div>
 
 
                 <div class="subtask-input-group">
@@ -2702,7 +3278,7 @@ function createCardElement(todo) {
 
 
 /* =========================================================
-   달력에 표시할 일정 만들기
+   달력 이벤트
 ========================================================= */
 
 function getCalendarEvents() {
@@ -2715,56 +3291,36 @@ function getCalendarEvents() {
 
     todos.forEach(todo => {
 
-        /*
-         오늘 할 일은 마감일이 없지만
-         달력에서는 오늘 날짜에 표시
-        */
-
         if (todo.category === 'today') {
 
             events.push({
 
                 id: todo.id,
-
                 title: todo.title,
-
                 date: today,
-
                 type: 'today',
-
                 completed: false,
-
                 todoId: todo.id
 
             });
 
         }
-
-
-        /* 일반 마감일 */
 
         else if (todo.dueDate) {
 
             events.push({
 
                 id: todo.id,
-
                 title: todo.title,
-
                 date: todo.dueDate,
-
                 type: 'todo',
-
                 completed: false,
-
                 todoId: todo.id
 
             });
 
         }
 
-
-        /* 프로젝트의 세부 항목 마감일 */
 
         if (
             todo.type === 'project' &&
@@ -2789,7 +3345,8 @@ function getCalendarEvents() {
                         date:
                             sub.dueDate,
 
-                        type: 'subtask',
+                        type:
+                            'subtask',
 
                         completed:
                             !!sub.completed,
@@ -3000,9 +3557,7 @@ function renderCalendar() {
                     'calendar-event';
 
 
-                if (
-                    event.completed
-                ) {
+                if (event.completed) {
 
                     badge.classList.add(
                         'completed'
@@ -3081,7 +3636,7 @@ function renderCalendar() {
 
 
 /* =========================================================
-   달력 날짜 상세
+   달력 상세
 ========================================================= */
 
 function showCalendarDetails(
@@ -3168,7 +3723,7 @@ function showCalendarDetails(
                         ? '☀️ '
                         : ''
                     }
-                    ${event.title}
+                    ${escapeHTML(event.title)}
                 </span>
 
             </div>
@@ -3211,7 +3766,7 @@ function showCalendarDetails(
 
 
 /* =========================================================
-   달력 일정 찾기
+   달력 이벤트 찾기
 ========================================================= */
 
 function findCalendarEvent(
@@ -3222,14 +3777,16 @@ function findCalendarEvent(
         getCalendarEvents();
 
     return events.find(
-        e => String(e.id) === String(eventId)
+        e =>
+            String(e.id) ===
+            String(eventId)
     );
 
 }
 
 
 /* =========================================================
-   달력에서 완료
+   달력 완료
 ========================================================= */
 
 function toggleCalendarEvent(
@@ -3246,13 +3803,6 @@ function toggleCalendarEvent(
         event.type === 'todo' ||
         event.type === 'today'
     ) {
-
-        /*
-         일반/오늘 할 일은
-         체크박스 대신 스와이프 완료 방식이므로
-         여기서는 간단히 삭제 = 완료 처리하지 않고
-         안내 후 원래 방식 유지
-        */
 
         alert(
             '일반 할 일은 메인 화면에서 오른쪽으로 밀어 완료할 수 있어요.'
@@ -3299,7 +3849,7 @@ function toggleCalendarEvent(
 
 
 /* =========================================================
-   달력에서 수정
+   달력 수정
 ========================================================= */
 
 function editCalendarEvent(
@@ -3311,10 +3861,6 @@ function editCalendarEvent(
 
     if (!event) return;
 
-
-    /*
-       메인 할 일 수정
-    */
 
     if (
         event.type === 'todo' ||
@@ -3330,62 +3876,12 @@ function editCalendarEvent(
     }
 
 
-    /*
-       세부 항목 수정
-    */
-
     if (event.type === 'subtask') {
 
-        const todo =
-            todos.find(
-                t => t.id === event.todoId
-            );
-
-        if (!todo) return;
-
-
-        const sub =
-            todo.subtasks.find(
-                s => s.id === event.subtaskId
-            );
-
-        if (!sub) return;
-
-
-        const newText =
-            prompt(
-                '세부 항목 수정:',
-                sub.text
-            );
-
-        if (
-            newText === null ||
-            !newText.trim()
-        ) return;
-
-
-        const newDate =
-            prompt(
-                '마감기한 수정 (YYYY-MM-DD):',
-                sub.dueDate || ''
-            );
-
-        if (newDate === null)
-            return;
-
-
-        sub.text =
-            newText.trim();
-
-        sub.dueDate =
-            newDate.trim() || null;
-
-
-        saveData();
-
-        render();
-
-        renderCalendar();
+        openSubtaskEditModal(
+            event.todoId,
+            event.subtaskId
+        );
 
     }
 
@@ -3393,7 +3889,7 @@ function editCalendarEvent(
 
 
 /* =========================================================
-   달력에서 삭제
+   달력 삭제
 ========================================================= */
 
 function deleteCalendarEvent(
@@ -3532,18 +4028,17 @@ function render() {
 
 
     let alertCount = 0;
-
     let todayTaskCount = 0;
-
     let commissionCount = 0;
-
     let homeworkCount = 0;
 
 
     todos.forEach(todo => {
 
 
-        /* 마감 알림 */
+        /* =====================
+           메인 할 일 마감
+        ===================== */
 
         if (
             todo.dueDate &&
@@ -3552,14 +4047,11 @@ function render() {
 
             alertCount++;
 
-
             const isPast =
                 todo.dueDate < todayStr;
 
-
             const item =
                 document.createElement('div');
-
 
             item.style.fontSize =
                 '.9rem';
@@ -3576,7 +4068,7 @@ function render() {
             item.innerHTML =
                 `
                 📌 <strong>
-                    ${todo.title}
+                    ${escapeHTML(todo.title)}
                 </strong>
 
                 <span
@@ -3604,7 +4096,9 @@ function render() {
         }
 
 
-        /* 세부 항목 마감 */
+        /* =====================
+           세부사항 마감
+        ===================== */
 
         if (
             todo.type === 'project'
@@ -3622,17 +4116,14 @@ function render() {
 
                         alertCount++;
 
-
                         const isPast =
                             sub.dueDate <
                             todayStr;
-
 
                         const item =
                             document.createElement(
                                 'div'
                             );
-
 
                         item.style.fontSize =
                             '.9rem';
@@ -3649,7 +4140,7 @@ function render() {
                         item.innerHTML =
                             `
                             📌 <strong>
-                                ${sub.text}
+                                ${escapeHTML(sub.text)}
                             </strong>
 
                             <span
@@ -3659,7 +4150,7 @@ function render() {
                                 "
                             >
                                 (
-                                ${todo.title}
+                                ${escapeHTML(todo.title)}
                                 -
                                 ${
                                     isPast
@@ -3760,9 +4251,7 @@ function render() {
 
 
     mainSectionTitle.style.display =
-        (
-            todoList.children.length > 0
-        )
+        todoList.children.length > 0
             ? 'block'
             : 'none';
 
@@ -3778,4 +4267,4 @@ render();
 </script>
 
 </body>
-    </html>
+</html>
