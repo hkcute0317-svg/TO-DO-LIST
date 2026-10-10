@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>스마트 할 일 관리</title>
+<style>
+:root {
+  --bg:#f0f7ff; --card:#fff; --blue:#60a5fa;
+  --dark:#2563eb; --line:#bae6fd; --text:#334155;
+  --sub:#64748b; --red:#ef4444;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:16px 10px;background:var(--bg);
+  color:var(--text);font-family:Arial,sans-serif;
+  display:flex;justify-content:center
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0;border-radius:9px;padding:8px 11px}
+.container{width:100%;max-width:650px}
+h1{text-align:center;color:var(--dark);font-size:24px}
+.panel,.task,.project{
+  background:white;border-radius:15px;padding:14px;
+  margin-bottom:12px;box-shadow:0 3px 12px #bfdbfe55
+}
+button.primary{background:var(--blue);color:white}
+button.secondary{background:#eff6ff;color:var(--dark)}
+button.danger{background:#fee2e2;color:#b91c1c}
+button.small{padding:5px 8px;font-size:13px}
+input,select,textarea{
+  border:1px solid var(--line);border-radius:8px;
+  padding:9px;min-width:0;max-width:100%
+}
+.row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.muted{font-size:12px;color:var(--sub)}
+.tools{display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.memo textarea{width:100%;margin-top:10px;resize:vertical}
+.collapsed textarea{display:none}
+#addMain{width:100%;padding:13px;margin:8px 0 18px}
+.category{margin:20px 0}
+.category-title{
+  font-weight:bold;border-bottom:2px solid var(--line);
+  padding-bottom:8px;margin-bottom:10px
+}
+.task-title{font-weight:bold;overflow-wrap:anywhere}
+.task,.project{touch-action:pan-y}
+.task.done .task-title{text-decoration:line-through;color:#94a3b8}
+.due{font-size:12px;color:#0369a1}
+.progress-bg{height:9px;background:#dbeafe;border-radius:20px;margin-top:12px;overflow:hidden}
+.progress{height:100%;background:var(--dark);width:0}
+.sub-list{border-top:1px solid #e2e8f0;margin-top:12px;padding-top:8px}
+.sub-item{display:flex;align-items:center;gap:6px;margin:8px 0;padding:7px;background:#f8fafc;border-radius:8px}
+.sub-item input[type=checkbox]{flex-shrink:0}
+.sub-item span{flex:1;min-width:0;overflow-wrap:anywhere}
+.sub-item.checked span{text-decoration:line-through;color:#94a3b8}
+.add-sub{display:flex;gap:6px;margin-top:10px}
+.add-sub input{flex:1;width:50%}
+.modal{
+  display:none;position:fixed;inset:0;background:#0006;
+  z-index:10;align-items:center;justify-content:center;padding:12px
+}
+.modal.show{display:flex}
+.modal-content{
+  background:white;border-radius:18px;padding:20px;
+  width:100%;max-width:430px;max-height:90vh;overflow:auto
+}
+.modal-content h2{font-size:19px;margin-top:0}
+.field{margin:12px 0}
+.field label{display:block;font-size:14px;margin-bottom:6px}
+.field input,.field select{width:100%}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.trash-item{border:1px solid #e2e8f0;border-radius:10px;padding:10px;margin:8px 0}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.calendar-grid button{padding:5px 0;min-height:40px;background:#f8fafc}
+.calendar-grid button.selected{outline:2px solid var(--blue)}
+.calendar-grid button.today{background:#dcfce7}
+#calendarEvents{margin-top:12px}
+.event{padding:8px;border-bottom:1px solid #e2e8f0}
+@media(max-width:420px){
+  body{padding:10px 7px}
+  .panel,.task,.project{padding:11px}
+  .task button,.project button{padding:6px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📝 스마트 할 일 관리</h1>
+
+  <div class="tools">
+    <button class="secondary" onclick="openCalendar()">📅 마감 달력</button>
+    <button class="secondary" onclick="openTrash()">🗑️ 휴지통 <span id="trashCount">0</span></button>
+  </div>
+
+  <section class="panel memo" id="memoPanel">
+    <div class="row">
+      <strong class="grow">✏️ 빠른 메모장</strong>
+      <button class="secondary small" onclick="toggleMemo()" id="memoToggle">접기 ▲</button>
+    </div>
+    <textarea id="memo" rows="3" placeholder="메모를 입력하세요. 자동 저장됩니다."></textarea>
+  </section>
+
+  <section class="panel" id="alerts" hidden>
+    <strong>🚨 마감일 확인</strong>
+    <div id="alertList"></div>
+  </section>
+
+  <button class="primary" id="addMain" onclick="openTodo()">＋ 새 할 일 추가하기</button>
+  <div id="categories"></div>
+</div>
+
+<!-- 할 일 추가 / 수정 -->
+<div class="modal" id="todoModal">
+  <div class="modal-content">
+    <h2 id="modalTitle">✨ 새 할 일 추가</h2>
+    <div class="field">
+      <label for="category">분류</label>
+      <select id="category">
+        <option value="today">☀️ 오늘 할 일</option>
+        <option value="commission">🎨 커미션</option>
+        <option value="homework">📚 숙제</option>
+        <option value="none">📋 일반 할 일</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="todoType">표시 방식</label>
+      <select id="todoType">
+        <option value="simple">일반 할 일</option>
+        <option value="project">세부목록 및 진행률</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="todoTitle">제목</label>
+      <input id="todoTitle" placeholder="할 일을 입력하세요">
+    </div>
+    <div class="field">
+      <label for="todoDue">마감 기한</label>
+      <input id="todoDue" type="date">
+    </div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeModal('todoModal')">취소</button>
+      <button class="primary" onclick="saveTodo()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 휴지통 -->
+<div class="modal" id="trashModal">
+  <div class="modal-content">
+    <h2>🗑️ 휴지통</h2>
+    <p class="muted">삭제한 항목은 7일 후 자동으로 영구 삭제됩니다.</p>
+    <div id="trashList"></div>
+    <div class="modal-actions">
+      <button class="danger" onclick="emptyTrash()">휴지통 비우기</button>
+      <button class="primary" onclick="closeModal('trashModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 달력 -->
+<div class="modal" id="calendarModal">
+  <div class="modal-content">
+    <div class="row">
+      <button class="secondary" onclick="changeMonth(-1)">◀</button>
+      <strong class="grow" id="calendarTitle" style="text-align:center"></strong>
+      <button class="secondary" onclick="changeMonth(1)">▶</button>
+    </div>
+    <div class="row" style="justify-content:space-around;margin-top:12px">
+      <span>일</span><span>월</span><span>화</span><span>수</span>
+      <span>목</span><span>금</span><span>토</span>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+    <div id="calendarEvents"></div>
+    <div class="modal-actions">
+      <button class="primary" onclick="closeModal('calendarModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TASK_KEY = 'myTodos';
+const TRASH_KEY = 'myTodoTrash';
+const MEMO_KEY = 'myQuickMemo';
+
+const groups = [
+  {id:'today',title:'☀️ 오늘 할 일 목록',color:'#0284c7'},
+  {id:'commission',title:'🎨 커미션 목록',color:'#d97706'},
+  {id:'homework',title:'📚 숙제 목록',color:'#7e22ce'},
+  {id:'none',title:'📋 기타 및 일반 할 일',color:'#64748b'}
+];
+
+function load(key,fallback){
+  try{
+    const value = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(value) ? value : fallback;
+  }catch{return fallback}
+}
+
+let todos = load(TASK_KEY,[]);
+let trash = load(TRASH_KEY,[]);
+let editingId = null;
+let calendarDate = new Date();
+let selectedDate = today();
+
+function uid(){
+  return Date.now() + Math.floor(Math.random()*100000);
+}
+
+function today(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function escapeHTML(value){
+  return String(value ?? '').replace(/[&<>"']/g,c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function save(){
+  localStorage.setItem(TASK_KEY,JSON.stringify(todos));
+  localStorage.setItem(TRASH_KEY,JSON.stringify(trash));
+  document.getElementById('trashCount').textContent = trash.length;
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove('show');
+}
+
+function openModal(id){
+  document.getElementById(id).classList.add('show');
+}
+
+function toggleMemo(){
+  const panel = document.getElementById('memoPanel');
+  panel.classList.toggle('collapsed');
+  document.getElementById('memoToggle').textContent =
+    panel.classList.contains('collapsed') ? '펼치기 ▼' : '접기 ▲';
+}
+
+const memo = document.getElementById('memo');
+memo.value = localStorage.getItem(MEMO_KEY) || '';
+memo.addEventListener('input',()=>{
+  localStorage.setItem(MEMO_KEY,memo.value);
+});
+
+function openTodo(id=null){
+  editingId = id;
+  const task = todos.find(t=>t.id===id);
+  document.getElementById('modalTitle').textContent =
+    task ? '✏️ 할 일 수정' : '✨ 새 할 일 추가';
+  document.getElementById('category').value = task?.category || 'today';
+  document.getElementById('todoType').value = task?.type || 'simple';
+  document.getElementById('todoTitle').value = task?.title || '';
+  document.getElementById('todoDue').value = task?.dueDate || '';
+  openModal('todoModal');
+}
+
+function saveTodo(){
+  const title = document.getElementById('todoTitle').value.trim();
+  if(!title){
+    alert('할 일 제목을 입력해주세요.');
+    return;
+  }
+
+  const data = {
+    title,
+    category:document.getElementById('category').value,
+    type:document.getElementById('todoType').value,
+    dueDate:document.getElementById('todoDue').value || null
+  };
+
+  if(editingId !== null){
+    const task = todos.find(t=>t.id===editingId);
+    if(task) Object.assign(task,data);
+  }else{
+    todos.push({id:uid(),...data,subtasks:[]});
+  }
+
+  save();
+  render();
+  closeModal('todoModal');
+}
+
+function moveToTrash(type,id,subId=null){
+  if(!confirm('이 항목을 휴지통으로 이동할까요?')) return;
+
+  if(type==='todo'){
+    const index = todos.findIndex(t=>t.id===id);
+    if(index<0) return;
+    const data = todos.splice(index,1)[0];
+    trash.unshift({kind:'todo',data,index,deletedAt:Date.now()});
+  }else{
+    const task = todos.find(t=>t.id===id);
+    if(!task) return;
+    const index = task.subtasks.findIndex(s=>s.id===subId);
+    if(index<0) return;
+    const data = task.subtasks.splice(index,1)[0];
+    trash.unshift({kind:'subtask',data,index,todoId:id,deletedAt:Date.now()});
+  }
+
+  save();
+  render();
+}
+
+function cleanupTrash(){
+  const cutoff = Date.now()-7*24*60*60*1000;
+  trash = trash.filter(x=>x.deletedAt>cutoff);
+  save();
+}
+
+function openTrash(){
+  cleanupTrash();
+  renderTrash();
+  openModal('trashModal');
+}
+
+function renderTrash(){
+  const box = document.getElementById('trashList');
+  if(!trash.length){
+    box.innerHTML = '<p class="muted">휴지통이 비어 있어요.</p>';
+    return;
+  }
+
+  box.innerHTML = trash.map((x,i)=>{
+    const name = x.kind==='todo' ? x.data.title : x.data.text;
+    const remaining = Math.max(0,7-Math.floor((Date.now()-x.deletedAt)/86400000));
+    return `<div class="trash-item">
+      <strong>${escapeHTML(name)}</strong>
+      <p class="muted">${remaining}일 후 자동 삭제</p>
+      <button class="secondary small" onclick="restoreTrash(${i})">복원</button>
+      <button class="danger small" onclick="deleteForever(${i})">영구 삭제</button>
+    </div>`;
+  }).join('');
+}
+
+function restoreTrash(index){
+  const item = trash[index];
+  if(!item) return;
+
+  if(item.kind==='todo'){
+    todos.splice(Math.min(item.index,todos.length),0,item.data);
+  }else{
+    const task = todos.find(t=>t.id===item.todoId);
+    if(!task){
+      alert('원래 할 일이 없어 복원할 수 없습니다.');
+      return;
+    }
+    task.subtasks.splice(Math.min(item.index,task.subtasks.length),0,item.data);
+  }
+
+  trash.splice(index,1);
+  save();
+  render();
+  renderTrash();
+}
+
+function deleteForever(index){
+  if(!confirm('영구 삭제할까요? 복구할 수 없습니다.')) return;
+  trash.splice(index,1);
+  save();
+  renderTrash();
+}
+
+function emptyTrash(){
+  if(!trash.length) return;
+  if(!confirm('휴지통을 모두 비울까요? 복구할 수 없습니다.')) return;
+  trash = [];
+  save();
+  renderTrash();
+}
+
+function progress(task){
+  const list = task.subtasks || [];
+  if(!list.length) return 0;
+  return Math.round(list.filter(s=>s.completed).length/list.length*100);
+}
+
+function moveTodo(id,delta){
+  const task = todos.find(t=>t.id===id);
+  if(!task) return;
+
+  const same = todos.filter(t=>t.category===task.category);
+  const index = same.findIndex(t=>t.id===id);
+  const other = same[index+delta];
+  if(!other) return;
+
+  const a = todos.indexOf(task);
+  const b = todos.indexOf(other);
+  [todos[a],todos[b]] = [todos[b],todos[a]];
+  save();
+  render();
+}
+
+function completeTodo(id){
+  const index = todos.findIndex(t=>t.id===id);
+  if(index<0) return;
+
+  const task = todos.splice(index,1)[0];
+  trash.unshift({kind:'todo',data:task,index,deletedAt:Date.now()});
+  save();
+  render();
+}
+
+function addSubtask(id){
+  const task = todos.find(t=>t.id===id);
+  const input = document.getElementById('subinput-'+id);
+  const text = input.value.trim();
+  if(!task || !text) return;
+
+  task.subtasks ||= [];
+  task.subtasks.push({id:uid(),text,completed:false});
+  save();
+  render();
+}
+
+function toggleSubtask(id,subId){
+  const task = todos.find(t=>t.id===id);
+  const sub = task?.subtasks.find(s=>s.id===subId);
+  if(!sub) return;
+  sub.completed = !sub.completed;
+  save();
+  render();
+}
+
+function moveSubtask(id,subId,delta){
+  const task = todos.find(t=>t.id===id);
+  if(!task) return;
+  const i = task.subtasks.findIndex(s=>s.id===subId);
+  const j = i+delta;
+  if(j<0 || j>=task.subtasks.length) return;
+  [task.subtasks[i],task.subtasks[j]] =
+    [task.subtasks[j],task.subtasks[i]];
+  save();
+  render();
+}
+
+function render(){
+  cleanupTrash();
+
+  const root = document.getElementById('categories');
+  root.innerHTML = '';
+  const now = today();
+  const alerts = [];
+
+  todos.forEach(t=>{
+    if(t.dueDate && t.dueDate<=now){
+      alerts.push({title:t.title,date:t.dueDate});
+    }
+  });
+
+  const alertBox = document.getElementById('alerts');
+  alertBox.hidden = alerts.length===0;
+  document.getElementById('alertList').innerHTML = alerts.map(a=>
+    `<p>${escapeHTML(a.title)} — ${a.date<now?'기한 지남':'오늘 마감'}</p>`
+  ).join('');
+
+  groups.forEach(group=>{
+    const list = todos.map((t,i)=>({t,i}))
+      .filter(x=>(x.t.category||'none')===group.id);
+
+    if(!list.length) return;
+
+    const section = document.createElement('section');
+    section.className = 'category';
+    section.innerHTML =
+      `<div class="category-title" style="color:${group.color}">${group.title}</div>`;
+
+    list.forEach(({t})=>{
+      const card = document.createElement('article');
+      card.className = t.type==='project' ? 'project' : 'task';
+
+      let html = `<div class="row">
+        <span class="grow task-title">${t.type==='project'?'📂':'👉'} ${escapeHTML(t.title)}</span>
+        ${t.dueDate?`<span class="due">📅 ${escapeHTML(t.dueDate)}</span>`:''}
+      </div>
+      <div class="row" style="justify-content:flex-end;margin-top:8px">
+        <button class="secondary small" onclick="moveTodo(${t.id},-1)">↑</button>
+        <button class="secondary small" onclick="moveTodo(${t.id},1)">↓</button>
+        <button class="secondary small" onclick="openTodo(${t.id})">수정</button>
+        <button class="danger small" onclick="moveToTrash('todo',${t.id})">삭제</button>
+      </div>`;
+
+      if(t.type==='simple'){
+        html += `<div class="row" style="justify-content:flex-end">
+          <button class="primary small" onclick="completeTodo(${t.id})">✓ 완료</button>
+        </div>`;
+      }else{
+        const p = progress(t);
+        html += `<div class="progress-bg"><div class="progress" style="width:${p}%"></div></div>
+          <p class="muted" style="text-align:right">진행률 ${p}%</p>
+          <div class="sub-list">`;
+
+        (t.subtasks||[]).forEach(s=>{
+          html += `<div class="sub-item ${s.completed?'checked':''}">
+            <input type="checkbox" ${s.completed?'checked':''}
+              onchange="toggleSubtask(${t.id},${s.id})">
+            <span>${escapeHTML(s.text)}</span>
+            <button class="secondary small" onclick="moveSubtask(${t.id},${s.id},-1)">↑</button>
+            <button class="secondary small" onclick="moveSubtask(${t.id},${s.id},1)">↓</button>
+            <button class="danger small" onclick="moveToTrash('subtask',${t.id},${s.id})">×</button>
+          </div>`;
+        });
+
+        html += `</div>
+          <div class="add-sub">
+            <input id="subinput-${t.id}" placeholder="세부 항목 입력">
+            <button class="primary" onclick="addSubtask(${t.id})">추가</button>
+          </div>`;
+      }
+
+      card.innerHTML = html;
+      section.appendChild(card);
+    });
+
+    root.appendChild(section);
+  });
+
+  document.getElementById('trashCount').textContent = trash.length;
+}
+
+function openCalendar(){
+  calendarDate = new Date();
+  selectedDate = today();
+  renderCalendar();
+  openModal('calendarModal');
+}
+
+function changeMonth(delta){
+  calendarDate.setDate(1);
+  calendarDate.setMonth(calendarDate.getMonth()+delta);
+  renderCalendar();
+}
+
+function renderCalendar(){
+  const y = calendarDate.getFullYear();
+  const m = calendarDate.getMonth();
+  document.getElementById('calendarTitle').textContent = `${y}년 ${m+1}월`;
+
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  for(let i=0;i<new Date(y,m,1).getDay();i++){
+    grid.appendChild(document.createElement('div'));
+  }
+
+  for(let day=1;day<=new Date(y,m+1,0).getDate();day++){
+    const date = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const button = document.createElement('button');
+    button.textContent = day;
+    if(date===selectedDate) button.classList.add('selected');
+    if(date===today()) button.classList.add('today');
+
+    const count = todos.filter(t=>t.dueDate===date).length;
+    if(count) button.textContent += ` ·${count}`;
+
+    button.onclick = ()=>{
+      selectedDate = date;
+      renderCalendar();
+    };
+    grid.appendChild(button);
+  }
+
+  const events = todos.filter(t=>
+    t.dueDate===selectedDate ||
+    (t.category==='today' && selectedDate===today())
+  );
+
+  document.getElementById('calendarEvents').innerHTML =
+    `<strong>📅 ${selectedDate} 일정</strong>` +
+    (events.length ? events.map(t=>
+      `<div class="event">${escapeHTML(t.title)}
+      <button class="secondary small" onclick="openTodo(${t.id})">수정</button></div>`
+    ).join('') : '<p class="muted">일정이 없습니다.</p>');
+}
+
+render();
+</script>
+</body>
+</html>
