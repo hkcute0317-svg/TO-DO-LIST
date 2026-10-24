@@ -728,7 +728,7 @@ footer {
   <header>
     <div>
       <div class="eyebrow">MY LITTLE PLANNER · DAILY ARCHIVE</div>
-      <h1>오늘의 조각들 ✂</h1>
+      <h1>오늘 할일</h1>
       <div class="subtitle" id="todayText"></div>
     </div>
     <button class="icon-button" onclick="openCalendar()">▦ 캘린더</button>
@@ -736,24 +736,24 @@ footer {
 
   <section class="paper-panel memo-panel">
     <div class="tape"></div>
-    <h2 class="panel-title">✎ 오늘의 메모</h2>
+    <h2 class="panel-title">✎ 메모</h2>
     <textarea id="quickMemo" placeholder="떠오르는 생각이나 잊으면 안 되는 것들..." aria-label="오늘의 메모"></textarea>
   </section>
 
   <section>
     <div class="section-heading">
-      <h2>놓치면 안 되는 일</h2>
+      <h2>급한 일</h2>
       <span class="date-label">DUE DATE CHECK</span>
     </div>
     <div class="alert-box" id="dueAlerts">
-      <strong>오늘의 마감 편지</strong>
+      <strong>마감일정</strong>
       <div>확인 중...</div>
     </div>
   </section>
 
   <section>
     <div class="section-heading">
-      <h2>나의 할 일 목록</h2>
+      <h2>할 일 목록</h2>
       <span class="date-label" id="taskCount"></span>
     </div>
 
@@ -762,7 +762,7 @@ footer {
         오늘 할 일<span id="count-today">0개</span>
       </button>
       <button class="category-tab" data-category="commission" onclick="setCategory('commission', this)">
-        의뢰<span id="count-commission">0개</span>
+        커미션<span id="count-commission">0개</span>
       </button>
       <button class="category-tab" data-category="homework" onclick="setCategory('homework', this)">
         숙제<span id="count-homework">0개</span>
@@ -799,7 +799,7 @@ footer {
         <label for="taskCategory">분류</label>
         <select id="taskCategory">
           <option value="today">오늘 할 일</option>
-          <option value="commission">의뢰</option>
+          <option value="commission">커미션</option>
           <option value="homework">숙제</option>
           <option value="general">기타</option>
         </select>
@@ -827,7 +827,7 @@ footer {
 <div class="modal-backdrop" id="calendarModal" onclick="backdropClose(event, 'calendarModal')">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('calendarModal')" aria-label="닫기">×</button>
-    <h2>나의 작은 달력</h2>
+    <h2>달력</h2>
 
     <div class="calendar-header">
       <button onclick="changeMonth(-1)">← 이전</button>
@@ -851,7 +851,7 @@ const TODAY_CATEGORY_RESET_KEY = 'myTodosLastResetDate';
 
 const CATEGORY_NAMES = {
   today: '오늘 할 일',
-  commission: '의뢰',
+  commission: '커미션',
   homework: '숙제',
   general: '기타'
 };
